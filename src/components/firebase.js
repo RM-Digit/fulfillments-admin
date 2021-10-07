@@ -10,5 +10,4 @@ const firebaseApp = initializeApp({
   messagingSenderId: "660625369628",
   appId: "1:660625369628:web:189a4babd2530dd15d0dd9",
 });
-const db = getFirestore();
-export default db;
+export const db = getFirestore();
