@@ -1,146 +1,45 @@
 import React, { useCallback, useState } from "react";
-import {
-  AppProvider,
-  ActionList,
-  Avatar,
-  Frame,
-  Icon,
-  TopBar,
-  VisuallyHidden,
-} from "@shopify/polaris";
-import {
-  ArrowLeftMinor,
-  ArrowRightMinor,
-  QuestionMarkMajor,
-} from "@shopify/polaris-icons";
+import { TopBar } from "@shopify/polaris";
+import { ArrowLeftMinor } from "@shopify/polaris-icons";
+import { useSelector } from "react-redux";
+import { getAuth, signOut } from "firebase/auth";
 
-export default function TopBarExample() {
+export default function Index() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isSecondaryMenuOpen, setIsSecondaryMenuOpen] = useState(false);
-  const [isSearchActive, setIsSearchActive] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
 
-  const toggleIsUserMenuOpen = useCallback(
-    () => setIsUserMenuOpen((isUserMenuOpen) => !isUserMenuOpen),
-    []
-  );
-
-  const toggleIsSecondaryMenuOpen = useCallback(
-    () => setIsSecondaryMenuOpen((isSecondaryMenuOpen) => !isSecondaryMenuOpen),
-    []
-  );
-
-  const handleSearchResultsDismiss = useCallback(() => {
-    setIsSearchActive(false);
-    setSearchValue("");
+  const toggleIsUserMenuOpen = useCallback((e) => {
+    setIsUserMenuOpen((isUserMenuOpen) => !isUserMenuOpen);
   }, []);
 
-  const handleSearchChange = useCallback((value) => {
-    setSearchValue(value);
-    setIsSearchActive(value.length > 0);
-  }, []);
-
-  const handleNavigationToggle = useCallback(() => {
-    console.log("toggle navigation visibility");
-  }, []);
-
-  const theme = {
-    logo: {
-      width: 124,
-      topBarSource: "lolo",
-      url: "#",
-      accessibilityLabel: "Logo",
-    },
+  const handleSingOut = () => {
+    signOut(getAuth());
   };
+  const user = useSelector((state) => state.user);
 
   const userMenuMarkup = (
     <TopBar.UserMenu
       actions={[
         {
-          items: [{ content: "Delivery Attributes", icon: ArrowRightMinor }],
-        },
-        {
-          items: [{ content: "Special Notes", icon: ArrowRightMinor }],
+          items: [
+            {
+              content: "Sign Out",
+              icon: ArrowLeftMinor,
+              onAction: handleSingOut,
+            },
+          ],
         },
       ]}
-      name="Fulfillments Admin"
-      detail="Dashboard"
-      initials="D"
+      name={user.userInfo && user.userInfo.displayName}
+      detail={user.userInfo && user.userInfo.email}
+      avatar={user.userInfo && user.userInfo.photoURL}
       open={isUserMenuOpen}
       onToggle={toggleIsUserMenuOpen}
     />
   );
 
-  const searchResultsMarkup = (
-    <ActionList
-      items={[{ content: "Search Item 1" }, { content: "Search Item 2" }]}
-    />
-  );
-
-  const searchFieldMarkup = (
-    <TopBar.SearchField
-      onChange={handleSearchChange}
-      value={searchValue}
-      placeholder="Search"
-      showFocusBorder
-    />
-  );
-
-  const secondaryMenuMarkup = (
-    <TopBar.Menu
-      activatorContent={
-        <span>
-          <Icon source={QuestionMarkMajor} />
-          <VisuallyHidden>Secondary menu</VisuallyHidden>
-        </span>
-      }
-      open={isSecondaryMenuOpen}
-      onOpen={toggleIsSecondaryMenuOpen}
-      onClose={toggleIsSecondaryMenuOpen}
-      actions={[
-        {
-          items: [{ content: "Help" }],
-        },
-      ]}
-    />
-  );
-
-  const topBarMarkup = (
-    <TopBar
-      showNavigationToggle
-      userMenu={userMenuMarkup}
-      secondaryMenu={secondaryMenuMarkup}
-      searchResultsVisible={isSearchActive}
-      searchField={searchFieldMarkup}
-      searchResults={searchResultsMarkup}
-      onSearchResultsDismiss={handleSearchResultsDismiss}
-      onNavigationToggle={handleNavigationToggle}
-    />
-  );
-
   return (
     <div style={{ height: "60px" }}>
-      <AppProvider
-        theme={theme}
-        i18n={{
-          Polaris: {
-            Avatar: {
-              label: "Avatar",
-              labelWithInitials: "Avatar with initials {initials}",
-            },
-            Frame: { skipToContent: "Skip to content" },
-            TopBar: {
-              toggleMenuLabel: "Toggle menu",
-              SearchField: {
-                clearButtonLabel: "Clear",
-                search: "Search",
-              },
-            },
-          },
-        }}
-      >
-        <Frame topBar={topBarMarkup} />
-      </AppProvider>
+      <TopBar userMenu={userMenuMarkup} />
     </div>
   );
 }

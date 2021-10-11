@@ -1,12 +1,26 @@
-import Home from "./home";
-import Topbar from "./components/topbar";
-import { Frame } from "@shopify/polaris";
+import Home from "./pages";
+import { Switch, Route } from "react-router-dom";
+import Loader from "./components/loading";
+import Login from "./pages/login";
+import { connect } from "react-redux";
+import React, { Suspense } from "react";
+import useAuth from "./hooks/useAuth";
 
-const Index = () => (
-  <Frame>
-    <Topbar />
-    <Home />
-  </Frame>
-);
+const App = () => {
+  const { initializing, user } = useAuth();
 
-export default Index;
+  return !initializing ? (
+    <Suspense fallback={<Loader />}>
+      <Switch>
+        <Route exact path="/" component={user ? Home : Login} />
+        <Home />
+      </Switch>
+    </Suspense>
+  ) : (
+    <Loader />
+  );
+};
+
+export default connect((state, ownProps) => ({
+  user: state.user,
+}))(App);

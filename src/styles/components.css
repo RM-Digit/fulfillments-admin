@@ -8,3 +8,9 @@
 .Polaris-FooterHelp {
   margin: 0;
 }
+.hover-box {
+  border-radius: 2px;
+  background-color: #47c1bf;
+  padding: 0 10px 10px;
+  max-width: 200px;
+}

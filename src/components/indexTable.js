@@ -1,4 +1,7 @@
 import React, { useCallback, useState, useEffect } from "react";
+import CsvDownloader from "react-csv-downloader";
+import { useDispatch } from "react-redux";
+import { editable_columns } from "../constants";
 import {
   useIndexResourceState,
   Card,
@@ -12,46 +15,56 @@ import {
   Heading,
   Pagination,
   FooterHelp,
+  Button,
 } from "@shopify/polaris";
+import ReactHover, { Trigger, Hover } from "react-hover";
+import { updateSignleField } from "../_actions/firestore_actions";
 
-export default function IndexTableWithAllElementsExample({
+const optionsCursorTrueWithMargin = {
+  followCursor: false,
+};
+
+export default function Index({
+  tableHeader,
+  tableTitle,
   tableData,
   perPage,
+  keys,
+  prefix,
 }) {
+  const dispatch = useDispatch();
   const [taggedWith, setTaggedWith] = useState("");
   const [queryValue, setQueryValue] = useState(null);
   const [sortValue, setSortValue] = useState("today");
-  const [availability, setAvailability] = useState(null);
+  const [status, setStatus] = useState(null);
   const [productType, setProductType] = useState(null);
   const [tableRows, setTableRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [csvData, setCsvData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [selectedDates, setSelectedDates] = useState({
     start: new Date("Fri Oct 01 2021 00:00:00 GMT-0500 (EST)"),
     end: new Date("Sun Oct 3 2021 00:00:00 GMT-0500 (EST)"),
   });
+  const [value, setValue] = useState("");
+
   const handleMonthChange = useCallback(
     (month, year) => setSelectedDates({ month, year }),
     []
   );
+
   useEffect(() => {
     const pageData = tableData.filter(
       (row, index) =>
         index >= (currentPage - 1) * perPage && index < currentPage * perPage
     );
+
     setTotal(tableData.length);
     setTableRows(pageData);
-  }, [currentPage, tableData]);
-
-  const tableHeader = [
-    { title: "Order ID" },
-    { title: "Date_Created" },
-    { title: "Fulfillment ID" },
-    { title: "Ship_date" },
-    { title: "Delivery_date" },
-    { title: "Contact Email" },
-    { title: "Fulfillment Status" },
-  ];
+    setCsvData(tableData);
+    setLoading(false);
+  }, [currentPage, tableData, queryValue == null]);
 
   const resourceName = {
     singular: "fulfillments",
@@ -65,10 +78,13 @@ export default function IndexTableWithAllElementsExample({
       resourceIDResolver,
     });
 
-  const handleAvailabilityChange = useCallback(
-    (value) => setAvailability(value),
-    []
-  );
+  const handleStatusChange = useCallback((value) => {
+    setStatus(value);
+    console.log("val,", value);
+    //   const rows = tableData.filter((row) =>
+    //   row.order_id.toString().includes(value)
+    // );
+  }, []);
   const handleProductTypeChange = useCallback(
     (value) => setProductType(value),
     []
@@ -77,6 +93,18 @@ export default function IndexTableWithAllElementsExample({
     (value) => setTaggedWith(value),
     []
   );
+
+  const handleSave = (id, key, pref) => {
+    setLoading(true);
+    dispatch(updateSignleField(id, key, value, pref));
+  };
+
+  const handleClick = (e) => {
+    e.stopPropagation();
+  };
+
+  const handleChange = useCallback((newValue) => setValue(newValue), []);
+
   const handleTaggedWithRemove = useCallback(() => setTaggedWith(null), []);
   const handleQueryValueRemove = useCallback(() => setQueryValue(null), []);
   const handleClearAll = useCallback(() => {
@@ -84,6 +112,20 @@ export default function IndexTableWithAllElementsExample({
     handleQueryValueRemove();
   }, [handleQueryValueRemove, handleTaggedWithRemove]);
   const handleSortChange = useCallback((value) => setSortValue(value), []);
+
+  const handleQueryChange = useCallback((value) => {
+    setQueryValue(value);
+    const rows = tableData.filter((row) =>
+      row.order_id.toString().includes(value)
+    );
+
+    // const pageData = rows.filter(
+    //   (row, index) =>
+    //     index >= (currentPage - 1) * perPage && index < currentPage * perPage
+    // );
+
+    setTableRows(rows);
+  }, []);
   const promotedBulkActions = [
     {
       content: "Edit Fulfillment",
@@ -119,8 +161,8 @@ export default function IndexTableWithAllElementsExample({
             { label: "Completed", value: "completed" },
             { label: "Canceled", value: "canceled" },
           ]}
-          selected={availability || []}
-          onChange={handleAvailabilityChange}
+          selected={status || []}
+          onChange={handleStatusChange}
           allowMultiple
         />
       ),
@@ -211,47 +253,83 @@ export default function IndexTableWithAllElementsExample({
     { label: "Last 7 days", value: "lastWeek" },
   ];
 
-  const rowMarkup = tableRows.map(
-    (
-      {
-        order_id,
-        data_created,
-        fulfillment_id,
-        ship_date,
-        delivery_date,
-        contact_email,
-        fulfillment_status,
-      },
-      index
-    ) => (
+  const rowMarkup =
+    tableRows &&
+    tableRows.map((row, index) => (
       <IndexTable.Row
-        id={order_id}
-        key={order_id}
-        selected={selectedResources.includes(order_id)}
+        id={row[keys[0]]}
+        key={row[keys[0]]}
+        selected={selectedResources.includes(row[keys[0]])}
         position={index}
       >
         <IndexTable.Cell>
-          <TextStyle variation="strong">{order_id}</TextStyle>
+          <TextStyle variation="strong">{row["order_id"]}</TextStyle>
         </IndexTable.Cell>
-        <IndexTable.Cell>{data_created}</IndexTable.Cell>
-        <IndexTable.Cell>{fulfillment_id}</IndexTable.Cell>
-        <IndexTable.Cell>{ship_date}</IndexTable.Cell>
-        <IndexTable.Cell>{delivery_date}</IndexTable.Cell>
-        <IndexTable.Cell>{contact_email}</IndexTable.Cell>
-        <IndexTable.Cell>{fulfillment_status}</IndexTable.Cell>
+        {keys.map(
+          (key, index) =>
+            index !== 0 && (
+              <IndexTable.Cell key={index}>
+                {editable_columns.includes(key) ? (
+                  <ReactHover options={optionsCursorTrueWithMargin}>
+                    <Trigger type="trigger">
+                      <span>{row[key]}</span>
+                    </Trigger>
+                    <Hover type="hover">
+                      <div className="hover-box" onClick={handleClick}>
+                        <TextField
+                          label={`Edit ${tableHeader[index].title}`}
+                          value={value}
+                          onChange={handleChange}
+                          autoComplete="off"
+                          connectedRight={
+                            <Button
+                              primary
+                              loading={loading}
+                              onClick={() =>
+                                handleSave(row["id"], key, prefix[key])
+                              }
+                            >
+                              Save
+                            </Button>
+                          }
+                        />
+                      </div>
+                    </Hover>
+                  </ReactHover>
+                ) : (
+                  row[key]
+                )}
+              </IndexTable.Cell>
+            )
+        )}
       </IndexTable.Row>
-    )
-  );
+    ));
 
   return (
-    <Card style={{ marginBottom: "20px" }}>
+    <Card
+      style={{ marginBottom: "20px" }}
+      title={tableTitle}
+      actions={[
+        {
+          content: (
+            <CsvDownloader
+              filename="csv-fulfillmentsData"
+              columns={tableHeader}
+              datas={csvData}
+            >
+              Export CSV
+            </CsvDownloader>
+          ),
+        },
+      ]}
+    >
       <div style={{ padding: "16px", display: "flex" }}>
         <div style={{ flex: 1 }}>
           <Filters
             queryValue={queryValue}
             filters={filters}
             appliedFilters={appliedFilters}
-            onQueryChange={setQueryValue}
+            onQueryChange={handleQueryChange}
             onQueryClear={handleQueryValueRemove}
             onClearAll={handleClearAll}
           />
@@ -276,26 +354,29 @@ export default function IndexTableWithAllElementsExample({
         promotedBulkActions={promotedBulkActions}
         bulkActions={bulkActions}
         headings={tableHeader}
+        lastColumnSticky
       >
         {rowMarkup}
       </IndexTable>
-      <FooterHelp>
-        <Pagination
-          label={`${(currentPage - 1) * perPage}-${
-            total > currentPage * perPage - 1
-              ? currentPage * perPage - 1
-              : total
-          } of total ${total}`}
-          hasPrevious={currentPage > 1}
-          onPrevious={() => {
-            setCurrentPage((currentPage) => currentPage - 1);
-          }}
-          hasNext={total > currentPage * perPage}
-          onNext={() => {
-            setCurrentPage((currentPage) => currentPage + 1);
-          }}
-        />
-      </FooterHelp>
+      {!queryValue && (
+        <FooterHelp>
+          <Pagination
+            label={`${(currentPage - 1) * perPage}-${
+              total > currentPage * perPage - 1
+                ? currentPage * perPage - 1
+                : total
+            } of total ${total}`}
+            hasPrevious={currentPage > 1}
+            onPrevious={() => {
+              setCurrentPage((currentPage) => currentPage - 1);
+            }}
+            hasNext={total > currentPage * perPage}
+            onNext={() => {
+              setCurrentPage((currentPage) => currentPage + 1);
+            }}
+          />
+        </FooterHelp>
+      )}
     </Card>
   );
 
