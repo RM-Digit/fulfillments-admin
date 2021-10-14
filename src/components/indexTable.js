@@ -1,7 +1,9 @@
 import React, { useCallback, useState, useEffect } from "react";
 import CsvDownloader from "react-csv-downloader";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { editable_columns } from "../constants";
+import { changeText, dateRangeChecker } from "../utils/common";
+import { toggleToast } from "_actions/ui_actions";
 import {
   useIndexResourceState,
   Card,
@@ -12,13 +14,14 @@ import {
   TextField,
   TextStyle,
   DatePicker,
-  Heading,
+  Subheading,
   Pagination,
   FooterHelp,
   Button,
+  Modal,
 } from "@shopify/polaris";
 import ReactHover, { Trigger, Hover } from "react-hover";
-import { updateSignleField } from "../_actions/firestore_actions";
+import { updateFields, updateSignleField } from "../_actions/firestore_actions";
 
 const optionsCursorTrueWithMargin = {
   followCursor: false,
@@ -32,118 +35,493 @@ export default function Index({
   keys,
   prefix,
 }) {
+  const fulfillments = useSelector((state) => state.data.tableData);
   const dispatch = useDispatch();
+  const [active, setActive] = useState(false);
   const [taggedWith, setTaggedWith] = useState("");
   const [queryValue, setQueryValue] = useState(null);
-  const [sortValue, setSortValue] = useState("today");
-  const [status, setStatus] = useState(null);
-  const [productType, setProductType] = useState(null);
+  const [sortValue, setSortValue] = useState("");
+  const [status, setStatus] = useState([]);
+  const [needsReview, setNeedsReview] = useState([]);
   const [tableRows, setTableRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [csvData, setCsvData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedDates, setSelectedDates] = useState({
-    start: new Date("Fri Oct 01 2021 00:00:00 GMT-0500 (EST)"),
-    end: new Date("Sun Oct 3 2021 00:00:00 GMT-0500 (EST)"),
+  const [deliveryZoneOptions, setDeliveryZoneOptions] = useState([]);
+  const [deliveryZone, setDeliveryZone] = useState("");
+  const [shippingMethodOptions, setShippingMethodOptions] = useState([]);
+  const [shippingMethod, setShippingMethod] = useState("");
+  const [{ order_month, order_year }, setOrderCalendar] = useState({
+    order_month: 9,
+    order_year: 2021,
+  });
+  const [{ ship_month, ship_year }, setShipCalendar] = useState({
+    ship_month: 9,
+    ship_year: 2021,
+  });
+  const [{ delivery_month, delivery_year }, setDeliveryCalendar] = useState({
+    delivery_month: 9,
+    delivery_year: 2021,
+  });
+  const [{ bulk_ship_month, bulk_ship_year }, setBulkShipCalendar] = useState({
+    bulk_ship_month: 9,
+    bulk_ship_year: 2021,
   });
   const [value, setValue] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState(null);
 
-  const handleMonthChange = useCallback(
-    (month, year) => setSelectedDates({ month, year }),
-    []
-  );
+  const [orderDate, setOrderDate] = useState(null);
+  const [shipDate, setShipDate] = useState(null);
+  const [bulkShipDate, setBulkShipDate] = useState({
+    start: new Date(),
+    end: new Date(),
+  });
 
   useEffect(() => {
-    const pageData = tableData.filter(
+    let delivery_zones = [{ label: "- Select One -", value: null }];
+    var compare_zone = [];
+    fulfillments.forEach((fulfillment, index) => {
+      const zone = fulfillment.delivery_attributes.delivery_zone;
+      if (!compare_zone.includes(zone)) {
+        compare_zone.push(zone);
+        delivery_zones.push({
+          label: zone,
+          value: zone,
+        });
+      }
+    });
+
+    setDeliveryZoneOptions(delivery_zones);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setDeliveryZoneOptions, fulfillments]);
+
+  useEffect(() => {
+    let shipping_methods = [{ label: "- Select One -", value: null }];
+    var compare_method = [];
+    fulfillments.forEach((fulfillment) => {
+      const method = fulfillment.delivery_attributes.shipping_method;
+
+      if (!compare_method.includes(method)) {
+        compare_method.push(method);
+        shipping_methods.push({
+          label: method,
+          value: method,
+        });
+      }
+    });
+
+    setShippingMethodOptions(shipping_methods);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setShippingMethodOptions, fulfillments]);
+
+  useEffect(() => {
+    var initial_data = tableData;
+
+    if (queryValue) {
+      const filtered_rows = fulfillments.filter(
+        (row) =>
+          row.sales_order.order_id.toString().includes(queryValue) ||
+          row.delivery_address.contact_email.includes(queryValue)
+      );
+      initial_data = tableData.filter(
+        (data) =>
+          filtered_rows.filter(
+            (row) => row.sales_order.order_id === data.order_id
+          ).length > 0
+      );
+    }
+
+    if (status.length > 0) {
+      const filtered_rows = fulfillments.filter((fulfillment) =>
+        status.includes(fulfillment.fulfillment_status)
+      );
+
+      initial_data = tableData.filter(
+        (data) =>
+          filtered_rows.filter(
+            (row) => row.sales_order.order_id === data.order_id
+          ).length > 0
+      );
+    }
+
+    if (needsReview.length > 0) {
+      const filtered_rows = fulfillments.filter((fulfillment) =>
+        needsReview.includes(fulfillment.fulfillment_needs_review)
+      );
+
+      initial_data = tableData.filter(
+        (data) =>
+          filtered_rows.filter(
+            (row) => row.sales_order.order_id === data.order_id
+          ).length > 0
+      );
+    }
+
+    if (deliveryZone && deliveryZone !== "- Select One -") {
+      const filtered_rows = fulfillments.filter(
+        (fulfillment) =>
+          deliveryZone === fulfillment.delivery_attributes.delivery_zone
+      );
+
+      initial_data = tableData.filter(
+        (data) =>
+          filtered_rows.filter(
+            (row) => row.sales_order.order_id === data.order_id
+          ).length > 0
+      );
+    }
+
+    if (shippingMethod && shippingMethod !== "- Select One -") {
+      const filtered_rows = fulfillments.filter(
+        (fulfillment) =>
+          shippingMethod === fulfillment.delivery_attributes.shipping_method
+      );
+
+      initial_data = tableData.filter(
+        (data) =>
+          filtered_rows.filter(
+            (row) => row.sales_order.order_id === data.order_id
+          ).length > 0
+      );
+    }
+
+    if (orderDate) {
+      const filtered_rows = fulfillments.filter((fulfillment) =>
+        dateRangeChecker(orderDate, fulfillment.sales_order.created)
+      );
+
+      initial_data = tableData.filter(
+        (data) =>
+          filtered_rows.filter(
+            (row) => row.sales_order.order_id === data.order_id
+          ).length > 0
+      );
+    }
+
+    if (shipDate) {
+      const filtered_rows = fulfillments.filter((fulfillment) =>
+        dateRangeChecker(shipDate, fulfillment.ship_date)
+      );
+
+      initial_data = tableData.filter(
+        (data) =>
+          filtered_rows.filter(
+            (row) => row.sales_order.order_id === data.order_id
+          ).length > 0
+      );
+    }
+
+    if (deliveryDate) {
+      const filtered_rows = fulfillments.filter((fulfillment) =>
+        dateRangeChecker(deliveryDate, fulfillment.delivery_date)
+      );
+
+      initial_data = tableData.filter(
+        (data) =>
+          filtered_rows.filter(
+            (row) => row.sales_order.order_id === data.order_id
+          ).length > 0
+      );
+    }
+
+    if (sortValue) {
+      switch (sortValue) {
+        case "today":
+          const filter_month = new Date().getMonth();
+          const filter_date = new Date().getDate();
+          const filter_day = new Date().getDay();
+
+          const filtered_rows = fulfillments.filter(
+            (fulfillment) =>
+              filter_month ===
+                fulfillment.sales_order.created.toDate().getMonth() &&
+              filter_date ===
+                fulfillment.sales_order.created.toDate().getDate() &&
+              filter_day === fulfillment.sales_order.created.toDate().getDay()
+          );
+
+          initial_data = tableData.filter(
+            (data) =>
+              filtered_rows.filter(
+                (row) => row.sales_order.order_id === data.order_id
+              ).length > 0
+          );
+          break;
+        case "yesterday":
+          let date = new Date();
+          date.setDate(date.getDate() - 1);
+          const filter_month_yesterday = date.getMonth();
+          const filter_date_yesterday = date.getDate();
+          const filter_day_yesterday = date.getDay();
+
+          const filtered_rows_by_yesterday = fulfillments.filter(
+            (fulfillment) =>
+              filter_month_yesterday ===
+                fulfillment.sales_order.created.toDate().getMonth() &&
+              filter_date_yesterday ===
+                fulfillment.sales_order.created.toDate().getDate() &&
+              filter_day_yesterday ===
+                fulfillment.sales_order.created.toDate().getDay()
+          );
+
+          initial_data = tableData.filter(
+            (data) =>
+              filtered_rows_by_yesterday.filter(
+                (row) => row.sales_order.order_id === data.order_id
+              ).length > 0
+          );
+          break;
+        case "lastWeek":
+          var today = new Date();
+
+          const rows = fulfillments.filter(
+            (fulfillment) =>
+              Math.ceil(
+                (today - fulfillment.sales_order.created.toDate()) /
+                  (1000 * 60 * 60 * 24)
+              ) <= 7
+          );
+
+          initial_data = tableData.filter(
+            (data) =>
+              rows.filter((row) => row.sales_order.order_id === data.order_id)
+                .length > 0
+          );
+          break;
+        default:
+          break;
+      }
+    }
+
+    const pageData = initial_data.filter(
       (row, index) =>
         index >= (currentPage - 1) * perPage && index < currentPage * perPage
     );
 
-    setTotal(tableData.length);
+    setTotal(initial_data.length);
     setTableRows(pageData);
-    setCsvData(tableData);
+    setCsvData(initial_data);
     setLoading(false);
-  }, [currentPage, tableData, queryValue == null]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    currentPage,
+    tableData,
+    fulfillments, // eslint-disable-next-line react-hooks/exhaustive-deps
+    queryValue == null,
+    status,
+    needsReview,
+    deliveryZone,
+    shippingMethod,
+    deliveryDate,
+    orderDate,
+    shipDate,
+    sortValue,
+    perPage,
+  ]);
 
   const resourceName = {
     singular: "fulfillments",
     plural: "fulfillments",
   };
   const resourceIDResolver = (tableRows) => {
-    return tableRows.order_id;
+    return tableRows.id;
   };
+
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(tableRows, {
       resourceIDResolver,
     });
+  useEffect(() => {
+    changeText("More actions", "Change needs_review");
+  }, [selectedResources]);
 
   const handleStatusChange = useCallback((value) => {
+    handleClearAll();
     setStatus(value);
-    console.log("val,", value);
-    //   const rows = tableData.filter((row) =>
-    //   row.order_id.toString().includes(value)
-    // );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const handleProductTypeChange = useCallback(
-    (value) => setProductType(value),
-    []
-  );
-  const handleTaggedWithChange = useCallback(
-    (value) => setTaggedWith(value),
-    []
-  );
+  const handleNeedsReviewChange = useCallback((value) => {
+    handleClearAll();
+    setNeedsReview(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handledDliveryZoneChange = useCallback((value) => {
+    handleClearAll();
+    setDeliveryZone(value); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleShippingMethodChange = useCallback((value) => {
+    handleClearAll();
+    setShippingMethod(value); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = (id, key, pref) => {
+    console.log(id, key, pref);
     setLoading(true);
-    dispatch(updateSignleField(id, key, value, pref));
+    dispatch(updateSignleField(id, key, value, pref))
+      .then((res) => {
+        dispatch(toggleToast());
+      })
+      .catch((err) => dispatch(toggleToast("Error Occurred!")));
   };
 
   const handleClick = (e) => {
     e.stopPropagation();
   };
 
+  const handleOrderMonthChange = useCallback(
+    (order_month, order_year) => setOrderCalendar({ order_month, order_year }), // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  const handleShipMonthChange = useCallback(
+    (ship_month, ship_year) => setShipCalendar({ ship_month, ship_year }),
+    []
+  );
+
+  const handleDeliveryMonthChange = useCallback(
+    (delivery_month, delivery_year) =>
+      setDeliveryCalendar({ delivery_month, delivery_year }),
+    []
+  );
+
+  const handleBulkShipMonthChange = useCallback(
+    (bulk_ship_month, bulk_ship_year) =>
+      setBulkShipCalendar({ bulk_ship_month, bulk_ship_year }),
+    []
+  );
+
+  const handleOrderDateChange = useCallback((value) => {
+    handleClearAll();
+    setOrderDate(value); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleShipDateChange = useCallback((value) => {
+    handleClearAll();
+    setShipDate(value); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleDeliveryDateChange = useCallback((value) => {
+    handleClearAll();
+    setDeliveryDate(value); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleBulkShipDateChange = useCallback((value) => {
+    handleClearAll();
+    setBulkShipDate(value); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleChange = useCallback((newValue) => setValue(newValue), []);
 
   const handleTaggedWithRemove = useCallback(() => setTaggedWith(null), []);
   const handleQueryValueRemove = useCallback(() => setQueryValue(null), []);
+  const handleStatusRemove = useCallback(() => setStatus([]), []);
+  const handleNeedsReviewRemove = useCallback(() => setNeedsReview([]), []);
+  const handleDeliveryZoneRemove = useCallback(() => setDeliveryZone(""), []);
+  const handleShippingMethodRemove = useCallback(
+    () => setShippingMethod(""),
+    []
+  );
+  const handleOrderDateRemove = useCallback(() => setOrderDate(null), []);
+  const handleShipDateRemove = useCallback(() => setShipDate(null), []);
+  const handleDeliveryDateRemove = useCallback(() => setDeliveryDate(null), []);
+  const handleSortRemove = useCallback(() => setSortValue(""), []);
+
   const handleClearAll = useCallback(() => {
-    handleTaggedWithRemove();
     handleQueryValueRemove();
-  }, [handleQueryValueRemove, handleTaggedWithRemove]);
-  const handleSortChange = useCallback((value) => setSortValue(value), []);
+    handleStatusRemove();
+    handleNeedsReviewRemove();
+    handleDeliveryZoneRemove();
+    handleShippingMethodRemove();
+    handleOrderDateRemove();
+    handleShipDateRemove();
+    handleDeliveryDateRemove();
+    handleSortRemove();
+  }, [
+    handleQueryValueRemove,
+    handleStatusRemove,
+    handleNeedsReviewRemove,
+    handleDeliveryZoneRemove,
+    handleShippingMethodRemove,
+    handleOrderDateRemove,
+    handleShipDateRemove,
+    handleDeliveryDateRemove,
+    handleSortRemove,
+  ]);
+
+  const handleSortChange = useCallback((value) => {
+    handleClearAll();
+    setSortValue(value); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleQueryChange = useCallback((value) => {
+    handleClearAll();
     setQueryValue(value);
-    const rows = tableData.filter((row) =>
-      row.order_id.toString().includes(value)
-    );
-
-    // const pageData = rows.filter(
-    //   (row, index) =>
-    //     index >= (currentPage - 1) * perPage && index < currentPage * perPage
-    // );
-
-    setTableRows(rows);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleBulkChangeModal = useCallback(() => {
+    setActive(true);
+  }, []);
+
+  const handleBulkChangeShipDate = useCallback(() => {
+    setActive(false);
+
+    dispatch(
+      updateFields(
+        selectedResources,
+        { ship_date: bulkShipDate.start },
+        "ship_date"
+      )
+    ).then((res) => {
+      dispatch(toggleToast());
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedResources, bulkShipDate]);
+
+  const handleToTrue = useCallback(() => {
+    dispatch(
+      updateFields(
+        selectedResources,
+        { fulfillment_needs_review: true },
+        "review"
+      )
+    ).then((res) => {
+      dispatch(toggleToast());
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleToFalse = useCallback(() => {
+    dispatch(
+      updateFields(
+        selectedResources,
+        { fulfillment_needs_review: false },
+        "review"
+      )
+    ).then((res) => {
+      dispatch(toggleToast());
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const promotedBulkActions = [
     {
-      content: "Edit Fulfillment",
-      onAction: () => console.log("Todo: implement bulk edit"),
+      content: "Change Ship Date",
+      onAction: handleBulkChangeModal,
     },
   ];
   const bulkActions = [
     {
-      content: "Change ship_date",
-      onAction: () => console.log("Todo: implement bulk change ship dates"),
+      content: "Bulk Change to True ",
+      onAction: handleToTrue,
     },
     {
-      content: "Change fulfillment_needs_review",
-      onAction: () =>
-        console.log(
-          "Todo: implement bulk change fulfillment_needs_review",
-          selectedResources
-        ),
+      content: "Bulk Change to False",
+      onAction: handleToFalse,
     },
   ];
 
@@ -173,14 +551,14 @@ export default function Index({
       label: "Fulfillment Needs Review",
       filter: (
         <ChoiceList
-          title="Product type"
+          title="Fulfillment Needs Review"
           titleHidden
           choices={[
-            { label: "Yes", value: "yes" },
-            { label: "No", value: "no" },
+            { label: "True", value: true },
+            { label: "False", value: false },
           ]}
-          selected={productType || []}
-          onChange={handleProductTypeChange}
+          selected={needsReview || []}
+          onChange={handleNeedsReviewChange}
           allowMultiple
         />
       ),
@@ -190,47 +568,60 @@ export default function Index({
       label: "Delivery Attributes",
       filter: (
         <>
-          <TextField
+          <Select
             label="Delivery Zone"
-            value={taggedWith}
-            onChange={handleTaggedWithChange}
-            autoComplete="off"
-            labelHidden
+            options={deliveryZoneOptions}
+            onChange={handledDliveryZoneChange}
+            value={deliveryZone}
           />
-          <ChoiceList
-            title="Delivery"
-            titleHidden
-            choices={[
-              { label: "Shipping Method", value: "shipping_method" },
-              { label: "Delivery Date", value: "delivery_date" },
-            ]}
-            selected={productType || []}
-            onChange={handleProductTypeChange}
-            allowMultiple
+          <br />
+          <Select
+            label="Shipping Method"
+            options={shippingMethodOptions}
+            onChange={handleShippingMethodChange}
+            value={shippingMethod}
           />
         </>
       ),
     },
     {
-      key: "order_ship_date",
-      label: "Order & Ship Date",
+      key: "filter_by_date",
+      label: "Filter By Date",
       filter: (
         <>
-          <Heading>Order Date</Heading>
+          <br />
+          <Subheading>Order Date</Subheading>
+          <br />
           <DatePicker
-            month={10}
-            year={2021}
-            onChange={setSelectedDates}
-            onMonthChange={handleMonthChange}
-            selected={selectedDates}
+            month={order_month}
+            year={order_year}
+            onChange={handleOrderDateChange}
+            onMonthChange={handleOrderMonthChange}
+            selected={orderDate}
+            allowRange
           />
-          <Heading>Ship Date</Heading>
+          <br />
+          <Subheading>Ship Date</Subheading>
+          <br />
           <DatePicker
-            month={10}
-            year={2021}
-            onChange={setSelectedDates}
-            onMonthChange={handleMonthChange}
-            selected={selectedDates}
+            month={ship_month}
+            year={ship_year}
+            onChange={handleShipDateChange}
+            onMonthChange={handleShipMonthChange}
+            selected={shipDate}
+            allowRange
+          />
+          <br />
+          <Subheading>Delivery Date</Subheading>
+          <br />
+
+          <DatePicker
+            month={delivery_month}
+            year={delivery_year}
+            onChange={handleDeliveryDateChange}
+            onMonthChange={handleDeliveryMonthChange}
+            selected={deliveryDate}
+            allowRange
           />
         </>
       ),
@@ -248,6 +639,7 @@ export default function Index({
     : [];
 
   const sortOptions = [
+    { label: "OrderDate", value: "" },
     { label: "Today", value: "today" },
     { label: "Yesterday", value: "yesterday" },
     { label: "Last 7 days", value: "lastWeek" },
@@ -257,9 +649,9 @@ export default function Index({
     tableRows &&
     tableRows.map((row, index) => (
       <IndexTable.Row
-        id={row[keys[0]]}
-        key={row[keys[0]]}
-        selected={selectedResources.includes(row[keys[0]])}
+        id={row["id"]}
+        key={row["id"]}
+        selected={selectedResources.includes(row["id"])}
         position={index}
       >
         <IndexTable.Cell>
@@ -312,17 +704,39 @@ export default function Index({
       actions={[
         {
           content: (
-            <CsvDownloader
-              filename="csv-fulfillmentsData"
-              columns={tableHeader}
-              datas={csvData}
-            >
+            <CsvDownloader filename="csv-fulfillmentsData" datas={csvData}>
+              Export CSV
+            </CsvDownloader>
+          ),
+          content: (
+            <CsvDownloader filename="csv-fulfillmentsData" datas={csvData}>
               Export CSV
             </CsvDownloader>
           ),
         },
       ]}
     >
+      <Modal
+        instant
+        open={active}
+        onClose={() => setActive(false)}
+        title="Bulk Change Ship date"
+        primaryAction={{
+          content: "Save",
+          onAction: handleBulkChangeShipDate,
+        }}
+      >
+        <Modal.Section>
+          <br />
+          <DatePicker
+            month={bulk_ship_month}
+            year={bulk_ship_year}
+            onChange={handleBulkShipDateChange}
+            onMonthChange={handleBulkShipMonthChange}
+            selected={bulkShipDate}
+          />
+        </Modal.Section>
+      </Modal>
       <div style={{ padding: "16px", display: "flex" }}>
         <div style={{ flex: 1 }}>
           <Filters
@@ -358,25 +772,24 @@ export default function Index({
       >
         {rowMarkup}
       </IndexTable>
-      {!queryValue && (
-        <FooterHelp>
-          <Pagination
-            label={`${(currentPage - 1) * perPage}-${
-              total > currentPage * perPage - 1
-                ? currentPage * perPage - 1
-                : total
-            } of total ${total}`}
-            hasPrevious={currentPage > 1}
-            onPrevious={() => {
-              setCurrentPage((currentPage) => currentPage - 1);
-            }}
-            hasNext={total > currentPage * perPage}
-            onNext={() => {
-              setCurrentPage((currentPage) => currentPage + 1);
-            }}
-          />
-        </FooterHelp>
-      )}
+
+      <FooterHelp>
+        <Pagination
+          label={`${(currentPage - 1) * perPage}-${
+            total > currentPage * perPage - 1
+              ? currentPage * perPage - 1
+              : total
+          } of total ${total}`}
+          hasPrevious={currentPage > 1}
+          onPrevious={() => {
+            setCurrentPage((currentPage) => currentPage - 1);
+          }}
+          hasNext={total > currentPage * perPage}
+          onNext={() => {
+            setCurrentPage((currentPage) => currentPage + 1);
+          }}
+        />
+      </FooterHelp>
     </Card>
   );
 

@@ -2,10 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
-import reportWebVitals from "./reportWebVitals";
-// import Auth from "./Auth";
-import { composeWithDevTools } from "redux-devtools-extension";
-import createSagaMiddleware from "redux-saga";
+import reportWebVitals from "./reportWebVitals"; // eslint-disable-next-line no-unused-vars
+import Auth from "./Auth";
+
 import { Provider } from "react-redux";
 import { applyMiddleware, createStore } from "redux";
 import rootReducer from "./_reducers";
@@ -19,14 +18,6 @@ import { BrowserRouter, Router } from "react-router-dom";
 import { createBrowserHistory } from "history";
 
 const history = createBrowserHistory();
-// const sagaMiddleware = createSagaMiddleware();
-
-// const middlewareList = [sagaMiddleware, thunk];
-// const composedEnhancer = composeWithDevTools(
-//   applyMiddleware(...middlewareList)
-// );
-
-// const store = createStore(rootReducer, composedEnhancer);
 
 const createStoreWithMiddleware = applyMiddleware(
   promiseMiddleware,
@@ -42,6 +33,7 @@ ReactDOM.render(
     <Provider store={store}>
       <BrowserRouter>
         <Router history={history}>
+          {/* <Auth Component={App}/> */}
           <App />
         </Router>
       </BrowserRouter>

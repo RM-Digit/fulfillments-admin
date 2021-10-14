@@ -14,6 +14,10 @@ const Index = () => {
     "contact_email",
     "contact_phone",
   ];
+  const prefix = {
+    contact_email: "delivery_address",
+    contact_phone: "delivery_address",
+  };
   const tableHeader = [
     { title: "Order ID" },
     { title: "Notes" },
@@ -23,6 +27,7 @@ const Index = () => {
   ];
   useEffect(() => {
     tableDatas && GetResponse();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableDatas]);
 
   const GetResponse = async () => {
@@ -51,6 +56,7 @@ const Index = () => {
           tableData={tableRows}
           perPage={15}
           keys={keys}
+          prefix={prefix}
         />
       </Page>
     )

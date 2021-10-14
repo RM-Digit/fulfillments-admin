@@ -1,6 +1,6 @@
 import IndexTable from "../components/indexTable";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Page } from "@shopify/polaris";
 
@@ -15,6 +15,12 @@ const Index = () => {
     "business_indicator",
     "delivery_hours",
   ];
+  const prefix = {
+    shipping_method: "delivery_attributes",
+    delivery_zone: "delivery_attributes",
+    service_time: "delivery_attributes",
+    delivery_hours: "delivery_attributes",
+  };
   const tableHeader = [
     { title: "Order ID" },
     { title: "Shipping Method" },
@@ -25,6 +31,7 @@ const Index = () => {
   ];
   useEffect(() => {
     tableDatas && GetResponse();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableDatas]);
   const GetResponse = async () => {
     let rowData = [];
@@ -55,6 +62,7 @@ const Index = () => {
           tableData={tableRows}
           perPage={15}
           keys={keys}
+          prefix={prefix}
         />
       </Page>
     )

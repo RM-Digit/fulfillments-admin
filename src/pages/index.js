@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from "react";
-import { Card, Tabs, ActionList, Button, Popover } from "@shopify/polaris";
+import { Card, Tabs } from "@shopify/polaris";
 import { useDispatch } from "react-redux";
 import { fetchAll } from "../_actions/firestore_actions";
 import Main from "./main";
@@ -56,7 +56,7 @@ export default connect(
   (state, ownProps) => (
     {
       user: state.user,
-      data: state.data,
+      data: state.data, // eslint-disable-next-line no-sequences
     },
     {
       fetchAll,

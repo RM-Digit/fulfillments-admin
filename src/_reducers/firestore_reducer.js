@@ -1,10 +1,16 @@
-import { FETCH_ALL, UPDATE_DOC } from "../_actions/type";
+import { FETCH_ALL, UPDATE_DOC, UPDATE_BULK } from "../_actions/type";
 
 export default function fetchReducer(state = {}, action) {
   switch (action.type) {
     case FETCH_ALL:
       return { ...state, tableData: action.payload };
     case UPDATE_DOC:
+      return {
+        ...state,
+        updated_data: action.payload.updated_data,
+        tableData: action.payload.tableData,
+      };
+    case UPDATE_BULK:
       return {
         ...state,
         updated_data: action.payload.updated_data,

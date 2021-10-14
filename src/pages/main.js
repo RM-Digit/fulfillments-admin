@@ -22,7 +22,7 @@ const Index = () => {
   };
   const tableHeader = [
     { title: "Order ID" },
-    { title: "Date Created" },
+    { title: "Order Date" },
     { title: "Fulfillment ID" },
     { title: "Ship Date" },
     { title: "Delivery Date" },
@@ -31,6 +31,7 @@ const Index = () => {
   ];
   useEffect(() => {
     tableDatas && GetResponse();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableDatas]);
 
   const GetResponse = async () => {

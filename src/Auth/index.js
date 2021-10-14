@@ -23,6 +23,7 @@ const MyApp = ({ Component }) => {
       </AppProvider>
     );
   } else {
+    // eslint-disable-next-line eqeqeq
     if (window.top == window.self) {
       window.location.assign(permissionUrl);
 
