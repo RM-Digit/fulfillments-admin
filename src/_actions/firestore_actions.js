@@ -1,4 +1,4 @@
-import { FETCH_ALL, UPDATE_DOC, UPDATE_BULK } from "./type";
+import { FETCH_ALL, UPDATE_DOC, UPDATE_BULK, BULK_EDITOR } from "./type";
 import { db } from "../utils/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
@@ -64,5 +64,41 @@ export async function updateFields(ids, data, type) {
   return {
     type: UPDATE_BULK,
     payload: { updated_data: ids, tableData: allData },
+  };
+}
+
+export async function bulkUpdateFields(datas, prefix) {
+  console.log("datas", datas);
+
+  for (const id in datas) {
+    const docRef = doc(db, "delivery_attributes", id);
+
+    for (const key in datas[id]) {
+      const val = datas[id][key];
+      const pref = prefix[key];
+      console.log("pref", pref);
+      if (pref) {
+        const docSnap = await getDoc(docRef);
+        const old = docSnap.data()[pref];
+        await updateDoc(docRef, { [pref]: { ...old, [key]: val } });
+      } else {
+        await updateDoc(docRef, {
+          [key]: val,
+        });
+      }
+    }
+  }
+
+  var allData = [];
+
+  const querySnapshot = await getDocs(collection(db, "delivery_attributes"));
+  querySnapshot.forEach((doc) => {
+    const id = { id: doc.id };
+    const tableData = { ...id, ...doc.data() };
+    allData.push(tableData);
+  });
+  return {
+    type: BULK_EDITOR,
+    payload: { tableData: allData },
   };
 }

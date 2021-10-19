@@ -1,6 +1,7 @@
 export const FETCH_ALL = "fetch_all";
 export const UPDATE_DOC = "update_doc";
 export const UPDATE_BULK = "update_bulk";
+export const BULK_EDITOR = "bulk_editor";
 export const TOGGLE_TOAST = "toggle_toast";
 export const REGISTER_USER = "register_user";
 export const UPDATE_USER = "update_user";

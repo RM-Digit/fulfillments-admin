@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { editable_columns } from "../constants";
 import { changeText, dateRangeChecker } from "../utils/common";
 import { toggleToast } from "_actions/ui_actions";
+import { Link } from "react-router-dom";
 import {
   useIndexResourceState,
   Card,
@@ -704,12 +705,23 @@ export default function Index({
       actions={[
         {
           content: (
-            <CsvDownloader filename="csv-fulfillmentsData" datas={csvData}>
-              Export CSV
-            </CsvDownloader>
+            <Link to="/bulkeditor" role="menuitem" className="link-primary">
+              Bulk Editor
+            </Link>
           ),
+        },
+        {
           content: (
-            <CsvDownloader filename="csv-fulfillmentsData" datas={csvData}>
+            <CsvDownloader
+              filename="csv-fulfillmentsData"
+              datas={
+                selectedResources
+                  ? csvData.filter((data) =>
+                      selectedResources.includes(data.id)
+                    )
+                  : csvData
+              }
+            >
               Export CSV
             </CsvDownloader>
           ),

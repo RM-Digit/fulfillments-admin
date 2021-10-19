@@ -20,3 +20,22 @@ export function dateRangeChecker(dateObj, check) {
 
   return check.toDate() >= from && check.toDate() <= to;
 }
+
+export function arrToArrObj(arr) {
+  return arr.map((a) => ({ label: a, value: a }));
+}
+
+export function getValFromObj(obj, key) {
+  if (obj.hasOwnProperty(key)) return obj[key];
+  for (const k in obj) {
+    if (typeof obj[k] === "object" && obj[k].hasOwnProperty(key))
+      return obj[k][key];
+  }
+}
+
+export function getPrefix(obj, key) {
+  if (obj.hasOwnProperty(key)) return "";
+  for (const k in obj) {
+    if (typeof obj[k] === "object" && obj[k].hasOwnProperty(key)) return k;
+  }
+}

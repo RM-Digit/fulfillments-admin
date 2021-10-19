@@ -14,3 +14,7 @@
   padding: 0 10px 10px;
   max-width: 200px;
 }
+.link-primary {
+  color: #2c6ecb;
+  text-decoration: none;
+}

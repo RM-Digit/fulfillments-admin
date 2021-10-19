@@ -33,8 +33,8 @@ ReactDOM.render(
     <Provider store={store}>
       <BrowserRouter>
         <Router history={history}>
-          {/* <Auth Component={App}/> */}
-          <App />
+          <Auth Component={App} />
+          {/* <App /> */}
         </Router>
       </BrowserRouter>
     </Provider>
