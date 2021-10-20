@@ -1,13 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
-export default function bulkEditor({ setShowBar }) {
+import { useDispatch } from "react-redux";
+export default function BulkEditor({ setShowBar }) {
+  const dispatch = useDispatch();
   return (
     <div className="Polaris-Page-Header__Row">
       <div className="Polaris-Page-Header__BreadcrumbWrapper">
         <nav role="navigation">
-          <Link
+          <span
+            onClick={() => {
+              !setShowBar &&
+                dispatch({
+                  type: "switch_view",
+                  payload: { mode: "main", ids: [] },
+                });
+            }}
             className="Polaris-Breadcrumbs__Breadcrumb"
-            to={setShowBar ? "/bulkeditor" : "/"}
             data-polaris-unstyled="true"
           >
             <span className="Polaris-Breadcrumbs__ContentWrapper">
@@ -25,7 +32,7 @@ export default function bulkEditor({ setShowBar }) {
               </span>
               <span className="Polaris-VisuallyHidden">Products</span>
             </span>
-          </Link>
+          </span>
         </nav>
       </div>
       <div className="Polaris-Page-Header__TitleWrapper">

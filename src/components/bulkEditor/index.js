@@ -8,6 +8,7 @@ import { getValFromObj, getPrefix } from "../../utils/common";
 export default function Index() {
   const [tableRows, setTableRows] = useState([]);
   const tableDatas = useSelector((state) => state.data.tableData);
+  const view_ids = useSelector((state) => state.ui.view.ids);
   const [showBar, setShowBar] = useState(false);
   const [editColumns, setEditColumns] = useState([]);
   const [prefs, setPrefs] = useState({});
@@ -18,16 +19,20 @@ export default function Index() {
     setShowBar(value);
   };
   useEffect(() => {
-    !tableDatas && (window.location.href = "/");
-    getHander();
-  }, []);
+    tableDatas.length > 0 && getHandler();
+  }, [tableDatas]);
 
-  function getHander() {
+  function getHandler() {
     const datas = tableDatas.map((tableData) => [
       tableData.id,
       tableData.sales_order.order_id,
     ]);
-    setTableRows(datas);
+    const rows =
+      view_ids.length > 0
+        ? datas.filter((data) => view_ids.includes(data[0]))
+        : datas;
+    setTableRows(rows);
+
     var editableColumns;
 
     tableDatas.map((data) => {

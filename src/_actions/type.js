@@ -3,6 +3,7 @@ export const UPDATE_DOC = "update_doc";
 export const UPDATE_BULK = "update_bulk";
 export const BULK_EDITOR = "bulk_editor";
 export const TOGGLE_TOAST = "toggle_toast";
+export const SWITCH_VIEW = "switch_view";
 export const REGISTER_USER = "register_user";
 export const UPDATE_USER = "update_user";
 export const LOGIN_USER = "login_user";

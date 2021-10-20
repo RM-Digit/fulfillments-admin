@@ -23,22 +23,22 @@ const createStoreWithMiddleware = applyMiddleware(
   promiseMiddleware,
   thunk
 )(createStore);
-
+console.log("windows URL", window.location.href)
 const store = createStoreWithMiddleware(
   rootReducer,
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 );
 ReactDOM.render(
-  <AppProvider i18n={translations}>
-    <Provider store={store}>
-      <BrowserRouter>
+  <Provider store={store}>
+    <BrowserRouter>
+      <AppProvider i18n={translations}>
         <Router history={history}>
           <Auth Component={App} />
           {/* <App /> */}
         </Router>
-      </BrowserRouter>
-    </Provider>
-  </AppProvider>,
+      </AppProvider>
+    </BrowserRouter>
+  </Provider>,
   document.getElementById("root")
 );
 

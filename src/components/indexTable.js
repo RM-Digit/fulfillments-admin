@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { editable_columns } from "../constants";
 import { changeText, dateRangeChecker } from "../utils/common";
 import { toggleToast } from "_actions/ui_actions";
-import { Link } from "react-router-dom";
+
 import {
   useIndexResourceState,
   Card,
@@ -20,6 +20,7 @@ import {
   FooterHelp,
   Button,
   Modal,
+  Link,
 } from "@shopify/polaris";
 import ReactHover, { Trigger, Hover } from "react-hover";
 import { updateFields, updateSignleField } from "../_actions/firestore_actions";
@@ -330,6 +331,12 @@ export default function Index({
     return tableRows.id;
   };
 
+  const gotoBulkEditor = () => {
+    dispatch({
+      type: "switch_view",
+      payload: { mode: "bulk_editor", ids: selectedResources },
+    });
+  };
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(tableRows, {
       resourceIDResolver,
@@ -704,11 +711,8 @@ export default function Index({
       title={tableTitle}
       actions={[
         {
-          content: (
-            <Link to="/bulkeditor" role="menuitem" className="link-primary">
-              Bulk Editor
-            </Link>
-          ),
+          content: "Bulk Editor",
+          onAction: gotoBulkEditor,
         },
         {
           content: (

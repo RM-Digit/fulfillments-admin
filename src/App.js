@@ -18,8 +18,8 @@ const App = () => {
   return !initializing ? (
     <Suspense fallback={<Loader />}>
       <Switch>
-        <Route exact path="/" component={user ? Home : Login} />
-        <Route exact path="/bulkeditor" component={user ? BulkEditor : Login} />
+        <Route path="/" component={user ? Home : Login} />
+        <Route path="/bulkeditor" component={user ? BulkEditor : Login} />
       </Switch>
       {ui.showToast ? (
         <Frame>

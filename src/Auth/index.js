@@ -1,7 +1,6 @@
 import createApp from "@shopify/app-bridge";
 import { Redirect } from "@shopify/app-bridge/actions";
-import { AppProvider } from "@shopify/polaris";
-import translations from "@shopify/polaris/locales/en.json";
+
 import "@shopify/polaris/dist/styles.css";
 import "../styles/components.css";
 
@@ -15,13 +14,10 @@ const token = urlParams.get("access_token");
 const shopHost = shop_origin + "/admin";
 const host = Buffer.from(shopHost).toString("base64");
 
+localStorage.setItem("STOREID", urlParams.get("id"))
 const MyApp = ({ Component }) => {
   if (token) {
-    return (
-      <AppProvider i18n={translations}>
-        <Component />
-      </AppProvider>
-    );
+    return <Component />;
   } else {
     // eslint-disable-next-line eqeqeq
     if (window.top == window.self) {
@@ -32,6 +28,7 @@ const MyApp = ({ Component }) => {
       const app = createApp({
         apiKey: apiKey,
         host: host,
+        forceRedirect: true,
       });
 
       Redirect.create(app).dispatch(Redirect.Action.REMOTE, permissionUrl);

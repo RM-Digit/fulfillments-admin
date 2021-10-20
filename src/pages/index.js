@@ -6,10 +6,13 @@ import Main from "./main";
 import Delivery from "./delivery";
 import SpecialNote from "./specialNote";
 import Tobbar from "../components/topbar";
-import { connect } from "react-redux";
+import { connect, useSelector } from "react-redux";
+import BulkEditor from "./bulkEditor";
+
 function Index() {
   const [selected, setSelected] = useState(0);
   const dispatch = useDispatch();
+  const view = useSelector((state) => state.ui.view.mode);
 
   const handleTabChange = useCallback(
     (selectedTabIndex) => setSelected(selectedTabIndex),
@@ -38,7 +41,7 @@ function Index() {
     },
   ];
 
-  return (
+  return view === "main" ? (
     <Card>
       <Tobbar />
       <Tabs
@@ -50,12 +53,15 @@ function Index() {
         <Card.Section>{Components[selected]}</Card.Section>
       </Tabs>
     </Card>
+  ) : (
+    <BulkEditor />
   );
 }
 export default connect(
   (state, ownProps) => (
     {
       user: state.user,
+      ui: state.ui,
       data: state.data, // eslint-disable-next-line no-sequences
     },
     {
