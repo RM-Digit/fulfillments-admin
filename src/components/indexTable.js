@@ -33,7 +33,7 @@ export default function Index({
   tableHeader,
   tableTitle,
   tableData,
-  perPage,
+
   keys,
   prefix,
 }) {
@@ -80,6 +80,18 @@ export default function Index({
     end: new Date(),
   });
 
+  const [perPage, setPerpage] = useState(15);
+
+  const handlePerpageChange = useCallback(
+    (value) => setPerpage(parseInt(value)),
+    []
+  );
+
+  const perPageOptions = [
+    { label: "15 rows ", value: 15 },
+    { label: "50 rows ", value: 50 },
+    { label: "100 rows ", value: 100 },
+  ];
   useEffect(() => {
     let delivery_zones = [{ label: "- Select One -", value: null }];
     var compare_zone = [];
@@ -771,6 +783,15 @@ export default function Index({
             options={sortOptions}
             value={sortValue}
             onChange={handleSortChange}
+          />
+        </div>
+        <div style={{ paddingLeft: "0.4rem" }}>
+          <Select
+            labelInline
+            label="View"
+            options={perPageOptions}
+            onChange={handlePerpageChange}
+            value={perPage}
           />
         </div>
       </div>

@@ -1,7 +1,7 @@
 import IndexTable from "../components/indexTable";
 
-import { useState, useEffect } from "react";
-import { Page } from "@shopify/polaris";
+import { useState, useEffect, useCallback } from "react";
+import { Page, Spinner } from "@shopify/polaris";
 import { useSelector } from "react-redux";
 
 const Index = () => {
@@ -54,19 +54,19 @@ const Index = () => {
     setTableRows(rowData);
   };
 
-  return (
-    tableRows.length > 0 && (
-      <Page>
-        <IndexTable
-          tableTitle="All Fulfillments Data"
-          tableHeader={tableHeader}
-          tableData={tableRows}
-          perPage={15}
-          keys={keys}
-          prefix={prefix}
-        />
-      </Page>
-    )
+  return tableRows.length > 0 ? (
+    <Page>
+      <IndexTable
+        tableTitle="All Fulfillments Data"
+        tableHeader={tableHeader}
+        tableData={tableRows}
+        perPage={15}
+        keys={keys}
+        prefix={prefix}
+      />
+    </Page>
+  ) : (
+    <Spinner accessibilityLabel="Spinner example" size="large" />
   );
 };
 export default Index;
