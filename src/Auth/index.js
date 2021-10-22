@@ -4,7 +4,7 @@ import { Redirect } from "@shopify/app-bridge/actions";
 import "@shopify/polaris/dist/styles.css";
 import "../styles/components.css";
 
-const apiKey = "fd6c2acf54456d5dc618ba20f928fca3";
+const apiKey = "SHOPIFY_API_KEY";
 const redirectUri =
   "https://us-central1-fulfillments-admin.cloudfunctions.net/oauthCallback";
 const urlParams = new URLSearchParams(window.location.search);

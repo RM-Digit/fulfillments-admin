@@ -141,10 +141,11 @@ A quick look at the top-level files and directories you'll see in the project ro
 **Shopify App Bridge** :  Shopify’s out-of-the-box library of UI actions and components.
 
 2.  **`How to Build a Shopify App`** \
-**OAuth Process** : \
+### OAuth Process : 
 Online access must be explicitly requested during the authorization phase of OAuth. Tokens with online access mode are linked to an individual user on a store, where the access token's lifespan matches the lifespan of the user's web session. \
 <br>
-**The OAuth Flow** :
+
+### The OAuth Flow :
 <img src="./resources/oauth.png">
 - The merchant makes a request to install the app.
 - The app redirects to Shopify to load the OAuth grant screen and requests the required scopes.
@@ -155,7 +156,8 @@ Online access must be explicitly requested during the authorization phase of OAu
 - The app uses the access token to make requests to the Shopify API.
 Shopify returns the requested data. \
 <br><br>
-**Installation permissions prompt** :
+
+### Installation permissions prompt :
 <img src="./resources/install.png">
 
 - After granting the permission prompt, Shopify returns the access_token
