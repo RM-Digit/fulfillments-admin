@@ -21,7 +21,7 @@ Runs the start-up.bash file to import DB
 
 ## Deploy
 
-### `npm run build` and ### `firebase deploy --only hosting`
+### `npm run build` and  `firebase deploy --only hosting`
 
 
 ## How to change DB
@@ -29,7 +29,6 @@ Runs the start-up.bash file to import DB
 Go to the src/constants/index.js, and you'll see a constant "collection_name".
 Change it.
 
-### `npm run build` and ### `firebase deploy --only hosting`
 
 <h1 align="center">
   Project Summary
