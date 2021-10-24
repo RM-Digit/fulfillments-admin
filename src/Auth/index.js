@@ -3,10 +3,8 @@ import { Redirect } from "@shopify/app-bridge/actions";
 
 import "@shopify/polaris/dist/styles.css";
 import "../styles/components.css";
+import {redirectUri,apiKey} from "../constants"
 
-const apiKey = "fd6c2acf54456d5dc618ba20f928fca3";
-const redirectUri =
-  "https://us-central1-fulfillments-admin.cloudfunctions.net/oauthCallback";
 const urlParams = new URLSearchParams(window.location.search);
 const shop_origin = urlParams.get("shop");
 const permissionUrl = `https://${shop_origin}/admin/oauth/authorize?client_id=${apiKey}&scope=read_products,read_content&redirect_uri=${redirectUri}`;

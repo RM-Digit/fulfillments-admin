@@ -21,14 +21,44 @@ Runs the start-up.bash file to import DB
 
 ## Deploy
 
-### `npm run build` and  `firebase deploy --only hosting`
+1.  **`Get api credentials`**:
+- Create a custom app through the Shopify partner account
+- Go to the App config page and copy `API key` and `API secret`
 
+2.  **`Register config vars on the cloud environment`**:
+- Go to the firebase directory by running `cd firebase`
+- Run `firebase init functions`
+- Run the following command to register the config vars
+`firebase functions:config:set shopify.secret="COPIED API SECRET" shopify.id="COPIED API KEY"`
+- Deploy your functions for the change to take effect by running `firebase deploy --only functions`
+
+3. **`Deploy hosting`**:
+- Make sure you're in the root directory
+- Go to the constants/index.js file and find the constant `"apiKey"`.\
+Replace the value with the Shopify API key you copied from the Shopify partner account.
+- Run `npm install`
+- Run `firebase init` in the root directory
+- Run the following command in the root directory \
+ `npm run build` and  `firebase deploy --only hosting`
+
+
+4. **`Shopify Partner Account setting`**:
+- Login to your Shopify partner account and click on the App setup tab
+- Change the APP URL and Add redirect URLs
+
+<img src="./resources/partner_url.png">
+
+- App URL: `https://fulfillments-admin.web.app`
+- Allowed redirection URL: `https://us-central1-fulfillments-admin.cloudfunctions.net/oauthCallback`
+5. **`Install on the Shopify Store`**:
+- Go to the Shopify Partner account and click on the name of your app that you want to install.
+- Find the "Generate Link" button and enter URL of the store URL
+- Copy the generated link and open it on the browser.
 
 ## How to change DB
 
 Go to the src/constants/index.js, and you'll see a constant "collection_name".
 Change it.
-
 
 <h1 align="center">
   Project Summary
