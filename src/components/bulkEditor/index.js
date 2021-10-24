@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState,  useEffect } from "react";
 import Breadcrumbs from "./Breadcrumb";
 import DataTable from "./dataTable";
 import { useSelector } from "react-redux";
@@ -20,6 +20,7 @@ export default function Index() {
   };
   useEffect(() => {
     tableDatas.length > 0 && getHandler();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableDatas]);
 
   function getHandler() {

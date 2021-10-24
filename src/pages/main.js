@@ -1,6 +1,6 @@
 import IndexTable from "../components/indexTable";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Page, Spinner } from "@shopify/polaris";
 import { useSelector } from "react-redux";
 

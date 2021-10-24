@@ -69,6 +69,7 @@ export default function Index({
 
   useEffect(() => {
     getShowBar(saveBarShow);
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saveBarShow]);
 
   useEffect(() => {
@@ -78,9 +79,11 @@ export default function Index({
         index >= (currentPage - 1) * perPage && index < currentPage * perPage
     );
     var headers = ["order_id"];
+    // eslint-disable-next-line array-callback-return
     appliedFields.map((field) => {
       headers.push(field.key);
       setTableHeading(headers);
+      
     });
 
     const rows = pageData.map((row) => {
@@ -102,10 +105,12 @@ export default function Index({
 
     setTotal(initial_data.length);
     setTableRows(rows);
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableData, currentPage, appliedFields, value]);
 
   useEffect(() => {
     if (selected.length > 0) {
+      
       const fields = selected.map((val) => ({
         key: val,
         label: val,
@@ -113,6 +118,7 @@ export default function Index({
       }));
       setAppliedFields(fields);
     }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, selected.length > 0]);
 
   const handleRemoveFields = useCallback((value) => {

@@ -9,3 +9,5 @@ export const editable_columns = [
   "notes",
   "contact_phone",
 ];
+
+export const collection_name = "delivery_attributes_2";

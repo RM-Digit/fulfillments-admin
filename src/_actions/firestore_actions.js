@@ -2,7 +2,8 @@ import { FETCH_ALL, UPDATE_DOC, UPDATE_BULK, BULK_EDITOR } from "./type";
 import { db } from "../utils/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
-const collection_name = "delivery_attributes_2";
+import {collection_name} from "../constants"
+
 export async function fetchAll() {
   let rowData = [];
 

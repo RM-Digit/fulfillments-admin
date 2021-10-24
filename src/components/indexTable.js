@@ -20,7 +20,7 @@ import {
   FooterHelp,
   Button,
   Modal,
-  Link,
+  
 } from "@shopify/polaris";
 import ReactHover, { Trigger, Hover } from "react-hover";
 import { updateFields, updateSignleField } from "../_actions/firestore_actions";

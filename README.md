@@ -18,6 +18,19 @@ Runs the firebase emulator
 
 Runs the start-up.bash file to import DB
 
+
+## Deploy
+
+### `npm run build` and ### `firebase deploy --only hosting`
+
+
+## How to change DB
+
+Go to the src/constants/index.js, and you'll see a constant "collection_name".
+Change it.
+
+### `npm run build` and ### `firebase deploy --only hosting`
+
 <h1 align="center">
   Project Summary
 </h1>
