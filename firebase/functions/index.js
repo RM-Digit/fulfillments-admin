@@ -2,8 +2,8 @@ const functions = require("firebase-functions");
 const axios = require("axios");
 const admin = require("firebase-admin");
 const { validateHMAC } = require("./utils");
-const SHOPIFY_CLIENT_SECRET = "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";
-const SHOPIFY_CLIENT_ID = "fd6c2acf54456d5dc618ba20f928fca3";
+const SHOPIFY_CLIENT_SECRET = functions.config().shopify.secret;
+const SHOPIFY_CLIENT_ID = functions.config().shopify.id;
 
 const app = admin.initializeApp({
   projectId: "fulfillments-admin",
