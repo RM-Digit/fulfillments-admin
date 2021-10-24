@@ -2,7 +2,7 @@ import React, { useCallback, useState, useEffect } from "react";
 import CsvDownloader from "react-csv-downloader";
 import { useDispatch, useSelector } from "react-redux";
 import { editable_columns } from "../constants";
-import { changeText, dateRangeChecker } from "../utils/common";
+import { changeText, dateRangeChecker,getValFromObj } from "../utils/common";
 import { toggleToast } from "_actions/ui_actions";
 
 import {
@@ -132,112 +132,64 @@ export default function Index({
 
   useEffect(() => {
     var initial_data = tableData;
-
+    console.log("init",initial_data)
     if (queryValue) {
-      const filtered_rows = fulfillments.filter(
+      initial_data = fulfillments.filter(
         (row) =>
           row.sales_order.order_id.toString().includes(queryValue) ||
           row.delivery_address.contact_email.includes(queryValue)
       );
-      initial_data = tableData.filter(
-        (data) =>
-          filtered_rows.filter(
-            (row) => row.sales_order.order_id === data.order_id
-          ).length > 0
-      );
+    
     }
 
     if (status.length > 0) {
-      const filtered_rows = fulfillments.filter((fulfillment) =>
+      initial_data = fulfillments.filter((fulfillment) =>
         status.includes(fulfillment.fulfillment_status)
-      );
-
-      initial_data = tableData.filter(
-        (data) =>
-          filtered_rows.filter(
-            (row) => row.sales_order.order_id === data.order_id
-          ).length > 0
       );
     }
 
     if (needsReview.length > 0) {
-      const filtered_rows = fulfillments.filter((fulfillment) =>
+      initial_data = fulfillments.filter((fulfillment) =>
         needsReview.includes(fulfillment.fulfillment_needs_review)
       );
 
-      initial_data = tableData.filter(
-        (data) =>
-          filtered_rows.filter(
-            (row) => row.sales_order.order_id === data.order_id
-          ).length > 0
-      );
+     
     }
 
     if (deliveryZone && deliveryZone !== "- Select One -") {
-      const filtered_rows = fulfillments.filter(
+      initial_data = fulfillments.filter(
         (fulfillment) =>
           deliveryZone === fulfillment.delivery_attributes.delivery_zone
-      );
-
-      initial_data = tableData.filter(
-        (data) =>
-          filtered_rows.filter(
-            (row) => row.sales_order.order_id === data.order_id
-          ).length > 0
       );
     }
 
     if (shippingMethod && shippingMethod !== "- Select One -") {
-      const filtered_rows = fulfillments.filter(
+      initial_data = fulfillments.filter(
         (fulfillment) =>
           shippingMethod === fulfillment.delivery_attributes.shipping_method
       );
 
-      initial_data = tableData.filter(
-        (data) =>
-          filtered_rows.filter(
-            (row) => row.sales_order.order_id === data.order_id
-          ).length > 0
-      );
     }
 
     if (orderDate) {
-      const filtered_rows = fulfillments.filter((fulfillment) =>
+      initial_data = fulfillments.filter((fulfillment) =>
         dateRangeChecker(orderDate, fulfillment.sales_order.created)
       );
 
-      initial_data = tableData.filter(
-        (data) =>
-          filtered_rows.filter(
-            (row) => row.sales_order.order_id === data.order_id
-          ).length > 0
-      );
     }
 
     if (shipDate) {
-      const filtered_rows = fulfillments.filter((fulfillment) =>
+      initial_data = fulfillments.filter((fulfillment) =>
         dateRangeChecker(shipDate, fulfillment.ship_date)
       );
 
-      initial_data = tableData.filter(
-        (data) =>
-          filtered_rows.filter(
-            (row) => row.sales_order.order_id === data.order_id
-          ).length > 0
-      );
     }
 
     if (deliveryDate) {
-      const filtered_rows = fulfillments.filter((fulfillment) =>
+      initial_data = fulfillments.filter((fulfillment) =>
         dateRangeChecker(deliveryDate, fulfillment.delivery_date)
       );
 
-      initial_data = tableData.filter(
-        (data) =>
-          filtered_rows.filter(
-            (row) => row.sales_order.order_id === data.order_id
-          ).length > 0
-      );
     }
 
     if (sortValue) {
@@ -247,7 +199,7 @@ export default function Index({
           const filter_date = new Date().getDate();
           const filter_day = new Date().getDay();
 
-          const filtered_rows = fulfillments.filter(
+          initial_data = fulfillments.filter(
             (fulfillment) =>
               filter_month ===
                 fulfillment.sales_order.created.toDate().getMonth() &&
@@ -256,12 +208,6 @@ export default function Index({
               filter_day === fulfillment.sales_order.created.toDate().getDay()
           );
 
-          initial_data = tableData.filter(
-            (data) =>
-              filtered_rows.filter(
-                (row) => row.sales_order.order_id === data.order_id
-              ).length > 0
-          );
           break;
         case "yesterday":
           let date = new Date();
@@ -270,7 +216,7 @@ export default function Index({
           const filter_date_yesterday = date.getDate();
           const filter_day_yesterday = date.getDay();
 
-          const filtered_rows_by_yesterday = fulfillments.filter(
+          initial_data = fulfillments.filter(
             (fulfillment) =>
               filter_month_yesterday ===
                 fulfillment.sales_order.created.toDate().getMonth() &&
@@ -280,28 +226,16 @@ export default function Index({
                 fulfillment.sales_order.created.toDate().getDay()
           );
 
-          initial_data = tableData.filter(
-            (data) =>
-              filtered_rows_by_yesterday.filter(
-                (row) => row.sales_order.order_id === data.order_id
-              ).length > 0
-          );
           break;
         case "lastWeek":
           var today = new Date();
 
-          const rows = fulfillments.filter(
+          initial_data = fulfillments.filter(
             (fulfillment) =>
               Math.ceil(
                 (today - fulfillment.sales_order.created.toDate()) /
                   (1000 * 60 * 60 * 24)
               ) <= 7
-          );
-
-          initial_data = tableData.filter(
-            (data) =>
-              rows.filter((row) => row.sales_order.order_id === data.order_id)
-                .length > 0
           );
           break;
         default:
@@ -675,7 +609,7 @@ export default function Index({
         position={index}
       >
         <IndexTable.Cell>
-          <TextStyle variation="strong">{row["order_id"]}</TextStyle>
+          <TextStyle variation="strong">{getValFromObj(row,"order_id")}</TextStyle>
         </IndexTable.Cell>
         {keys.map(
           (key, index) =>
@@ -684,7 +618,8 @@ export default function Index({
                 {editable_columns.includes(key) ? (
                   <ReactHover options={optionsCursorTrueWithMargin}>
                     <Trigger type="trigger">
-                      <span>{row[key]}</span>
+                      <span>{typeof getValFromObj(row, key) === 'object'?getValFromObj(row, key).toDate().toDateString():getValFromObj(row, key)}</span>
+                      
                     </Trigger>
                     <Hover type="hover">
                       <div className="hover-box" onClick={handleClick}>
@@ -709,7 +644,7 @@ export default function Index({
                     </Hover>
                   </ReactHover>
                 ) : (
-                  row[key]
+                  typeof getValFromObj(row, key) === 'object'?getValFromObj(row, key).toDate().toDateString():getValFromObj(row, key)
                 )}
               </IndexTable.Cell>
             )

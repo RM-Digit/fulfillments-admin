@@ -10,7 +10,7 @@ const Index = () => {
 
   const keys = [
     "order_id",
-    "data_created",
+    "created",
     "fulfillment_id",
     "ship_date",
     "delivery_date",
@@ -41,7 +41,7 @@ const Index = () => {
       const row = {
         id: tableData.id,
         order_id: tableData.sales_order.order_id,
-        data_created: tableData.sales_order.created.toDate().toDateString(),
+        created: tableData.sales_order.created.toDate().toDateString(),
         fulfillment_id: tableData.fulfillment_id,
         ship_date: tableData.ship_date.toDate().toDateString(),
         delivery_date: tableData.delivery_date.toDate().toDateString(),

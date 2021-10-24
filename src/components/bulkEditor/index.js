@@ -35,10 +35,10 @@ export default function Index() {
     setTableRows(rows);
 
     var editableColumns;
-
+// eslint-disable-next-line array-callback-return
     tableDatas.map((data) => {
       var singleFields = {};
-
+// eslint-disable-next-line array-callback-return
       editable_columns.map((column) => {
         singleFields = {
           ...singleFields,
@@ -51,6 +51,7 @@ export default function Index() {
 
     setEditColumns(editableColumns);
     var prefix = {};
+    // eslint-disable-next-line array-callback-return
     editable_columns.map((column) => {
       prefix = {
         ...prefix,

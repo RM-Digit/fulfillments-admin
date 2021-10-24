@@ -26,11 +26,12 @@ export function arrToArrObj(arr) {
 }
 
 export function getValFromObj(obj, key) {
-  if (obj.hasOwnProperty(key)) return obj[key];
+  if (obj.hasOwnProperty(key)) return obj[key]?obj[key]:"";
   for (const k in obj) {
     if (typeof obj[k] === "object" && obj[k].hasOwnProperty(key))
-      return obj[k][key];
+      return obj[k][key]?obj[k][key]:"";
   }
+  return "";
 }
 
 export function getPrefix(obj, key) {

@@ -33,8 +33,8 @@ ReactDOM.render(
     <BrowserRouter>
       <AppProvider i18n={translations}>
         <Router history={history}>
-          <Auth Component={App} />
-          {/* <App /> */}
+          {/* <Auth Component={App} /> */}
+          <App />
         </Router>
       </AppProvider>
     </BrowserRouter>
