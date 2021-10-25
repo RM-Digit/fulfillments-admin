@@ -8,7 +8,6 @@ import useAuth from "./hooks/useAuth";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleToast } from "./_actions/ui_actions";
 import { Toast, Frame } from "@shopify/polaris";
-import BulkEditor from "./pages/bulkEditor";
 
 const App = () => {
   const ui = useSelector((state) => state.ui);
@@ -19,7 +18,6 @@ const App = () => {
     <Suspense fallback={<Loader />}>
       <Switch>
         <Route path="/" component={user ? Home : Login} />
-        <Route path="/bulkeditor" component={user ? BulkEditor : Login} />
       </Switch>
       {ui.showToast ? (
         <Frame>

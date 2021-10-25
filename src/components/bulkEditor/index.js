@@ -2,7 +2,7 @@ import React, { useState,  useEffect } from "react";
 import Breadcrumbs from "./Breadcrumb";
 import DataTable from "./dataTable";
 import { useSelector } from "react-redux";
-import { editable_columns } from "../../constants";
+import { editable_columns ,default_columns} from "../../constants";
 import { getValFromObj, getPrefix } from "../../utils/common";
 
 export default function Index() {
@@ -12,8 +12,6 @@ export default function Index() {
   const [showBar, setShowBar] = useState(false);
   const [editColumns, setEditColumns] = useState([]);
   const [prefs, setPrefs] = useState({});
-
-  const default_columns = ["shipping_method", "service_time", "contact_email"];
 
   const handleBarShow = (value) => {
     setShowBar(value);
@@ -34,19 +32,20 @@ export default function Index() {
         : datas;
     setTableRows(rows);
 
-    var editableColumns;
-// eslint-disable-next-line array-callback-return
+    var editableColumns = [];
+    // eslint-disable-next-line array-callback-return
     tableDatas.map((data) => {
       var singleFields = {};
-// eslint-disable-next-line array-callback-return
+      // eslint-disable-next-line array-callback-return
       editable_columns.map((column) => {
         singleFields = {
           ...singleFields,
           [column]: getValFromObj(data, column),
         };
       });
-
-      editableColumns = { ...editableColumns, [data.id]: singleFields };
+    
+      editableColumns[data.id] = singleFields;
+      // editableColumns = { ...editableColumns, [data.id]: singleFields };
     });
 
     setEditColumns(editableColumns);

@@ -132,7 +132,6 @@ export default function Index({
 
   useEffect(() => {
     var initial_data = tableData;
-    console.log("init",initial_data)
     if (queryValue) {
       initial_data = fulfillments.filter(
         (row) =>
