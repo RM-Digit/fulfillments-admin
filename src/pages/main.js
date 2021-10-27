@@ -36,16 +36,16 @@ const Index = () => {
 
   const GetResponse = async () => {
     let rowData = [];
-
+    console.log("tabledatas from FB", tableDatas)
     tableDatas.forEach((tableData) => {
       const row = {
         id: tableData.id,
-        order_id: tableData.sales_order.order_id,
-        created: tableData.sales_order.created.toDate().toDateString(),
+        order_id: tableData.sales_order?tableData.sales_order.order_id:"",
+        created: tableData.sales_order?tableData.sales_order.created.toDate().toDateString():"",
         fulfillment_id: tableData.fulfillment_id,
-        ship_date: tableData.ship_date.toDate().toDateString(),
-        delivery_date: tableData.delivery_date.toDate().toDateString(),
-        contact_email: tableData.delivery_address.contact_email,
+        ship_date: tableData.ship_date?tableData.ship_date.toDate().toDateString():"",
+        delivery_date: tableData.delivery_date?tableData.delivery_date.toDate().toDateString():"",
+        contact_email: tableData.delivery_address?tableData.delivery_address.contact_email:"",
         fulfillment_status: tableData.fulfillment_status,
       };
 

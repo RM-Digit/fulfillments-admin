@@ -21,23 +21,49 @@ Runs the start-up.bash file to import DB
 
 ## Deploy
 
+(make sure you did `git clone`) 
+
 1.  **`Get api credentials`**:
 - Create a custom app through the Shopify partner account
 - Go to the App config page and copy `API key` and `API secret`
 
-2.  **`Register config vars on the cloud environment`**:
+2. **`Firebase Config`**:
+- Create a firebase project and create a firestore database (not using RTDB)
+- Go to the firebase console and navigate to `Firebase/authentication`.
+- Click on "Add signin method" and enable the google signin method
+- Go to `Firestore` and click on the rules tab
+  and replace the line `auth == true` with `auth !== null`
+- Click on the `settings` icon on the Firebase console and click `project settings`
+  When you scroll down, you will find the config var `firebaseConfig` \
+  copy it.
+- Go to the `src/utils/firebase.js` file and find the var `firebaseConfig`
+ Replace it with the configvar you just copied.
+- Go to the `src/constants/index.js` file and find the const `collection_name` \
+This is the name of the collection you will be using.
+
+3.  **`Register config vars on the cloud environment`**:
 - Go to the firebase directory by running `cd firebase`
+- Run `firebase login` and selecte a firebase project you want to deploy
+- Go to `firebase/functions/index.js` and find the app init part.
+```
+const app = admin.initializeApp({
+  projectId: "fulfillments-admin",
+});
+```
+Make sure that the projectId is correct.
 - Run `firebase init functions`
 - Run the following command to register the config vars
 `firebase functions:config:set shopify.secret="COPIED API SECRET" shopify.id="COPIED API KEY"`
 - Deploy your functions for the change to take effect by running `firebase deploy --only functions`
 
-3. **`Deploy hosting`**:
+4. **`Deploy hosting`**:
 - Make sure you're in the root directory
 - Go to the constants/index.js file and find the constant `"apiKey"`.\
 Replace the value with the Shopify API key you copied from the Shopify partner account.
 - Run `npm install`
+- Run `firebase login` and selecte a firebase project you want to deploy
 - Run `firebase init` in the root directory
+- Choose all default settings except the deploy directory. It is `Public` by default but it should be `build`
 - Run the following command in the root directory \
  `npm run build` and  `firebase deploy --only hosting`
 
