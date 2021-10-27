@@ -96,7 +96,7 @@ export default function Index({
     let delivery_zones = [{ label: "- Select One -", value: null }];
     var compare_zone = [];
     fulfillments.forEach((fulfillment, index) => {
-      if(!fulfillment.delivery_attributes) continue;
+   
       const zone = fulfillment.delivery_attributes.delivery_zone;
       if (!compare_zone.includes(zone)) {
         compare_zone.push(zone);
@@ -116,7 +116,7 @@ export default function Index({
     let shipping_methods = [{ label: "- Select One -", value: null }];
     var compare_method = [];
     fulfillments.forEach((fulfillment) => {
-      if(!fulfillment.delivery_attributes) continue;
+    
       const method = fulfillment.delivery_attributes.shipping_method;
 
       if (!compare_method.includes(method)) {
