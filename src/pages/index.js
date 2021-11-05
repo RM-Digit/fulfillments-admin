@@ -15,7 +15,10 @@ function Index() {
   const view = useSelector((state) => state.ui.view.mode);
 
   const handleTabChange = useCallback(
-    (selectedTabIndex) => setSelected(selectedTabIndex),
+    (selectedTabIndex) => {
+      localStorage.removeItem('order_id');
+      setSelected(selectedTabIndex)
+    },
     []
   );
   useEffect(() => {

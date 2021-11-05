@@ -32,7 +32,8 @@ ReactDOM.render(
     <BrowserRouter>
       <AppProvider i18n={translations}>
         <Router history={history}>
-          {(!process.env.NODE_ENV || process.env.NODE_ENV === 'development') ? <App /> : <Auth Component={App} />}
+          {/* {(!process.env.NODE_ENV || process.env.NODE_ENV === 'development') ? <App /> : <Auth Component={App} />} */}
+          <Auth Component={App} />
         </Router>
       </AppProvider>
     </BrowserRouter>

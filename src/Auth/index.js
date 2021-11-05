@@ -17,6 +17,8 @@ if ( order_id !== null) {
   localStorage.setItem("order_id", order_id);
 }
 
+if( order_id === null && token === null) localStorage.removeItem('order_id');
+
 const MyApp = ({ Component }) => {
   if (token) {
     return <Component />;
@@ -24,7 +26,6 @@ const MyApp = ({ Component }) => {
     // eslint-disable-next-line eqeqeq
     if (window.top == window.self) {
       window.location.assign(permissionUrl);
-
       // If the current window is the 'child', change the parent's URL with Shopify App Bridge's Redirect action
     } else {
       const app = createApp({

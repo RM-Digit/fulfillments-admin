@@ -634,7 +634,7 @@ export default function Index({
         selected={selectedResources.includes(row["id"])}
         position={index}
       >
-        <IndexTable.Cell>
+        <IndexTable.Cell style={{display:"none"}}>
           <TextStyle variation="strong">{getValFromObj(row,"order_id")}</TextStyle>
         </IndexTable.Cell>
         {keys.map(
