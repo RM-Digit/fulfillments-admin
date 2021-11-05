@@ -24,7 +24,6 @@ exports.requestData = functions.https.onRequest((req, res) => {
 });
 
 exports.oauthCallback = functions.https.onRequest((req, res) => {
-  console.log("wow request received");
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.set("Access-Control-Allow-Headers", "*");
@@ -33,7 +32,6 @@ exports.oauthCallback = functions.https.onRequest((req, res) => {
   const code = req.query.code;
   const hmac = req.query.hmac;
 
-  console.log("!!!", shop, code, hmac);
   if (!(shop && hmac && code))
     return res.redirect(
       `https://${shop}/admin/apps/${SHOPIFY_CLIENT_ID}/error.html`
@@ -44,7 +42,6 @@ exports.oauthCallback = functions.https.onRequest((req, res) => {
     hmac,
     apiSecret: SHOPIFY_CLIENT_SECRET,
   });
-  console.log("has equals", hashEquals);
   if (!hashEquals)
     return res.redirect(
       `https://${shop}/admin/apps/${SHOPIFY_CLIENT_ID}/error.html?message=HMAC validation failed`
@@ -58,7 +55,6 @@ exports.oauthCallback = functions.https.onRequest((req, res) => {
     })
     .then((body) => {
       const accessToken = body.data.access_token;
-      console.log("accessTOken", accessToken);
       if (!accessToken)
         return res.redirect(
           `https://${shop}/admin/apps/${SHOPIFY_CLIENT_ID}/error.html`
@@ -69,7 +65,6 @@ exports.oauthCallback = functions.https.onRequest((req, res) => {
       );
     })
     .catch((err) => {
-      console.log("err", err);
       return res.redirect(
         `https://${shop}/admin/apps/${SHOPIFY_CLIENT_ID}/error.html`
       );

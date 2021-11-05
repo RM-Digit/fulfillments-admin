@@ -36,7 +36,6 @@ const Index = () => {
 
   const GetResponse = async () => {
     let rowData = [];
-    console.log("tabledatas from FB", tableDatas)
     tableDatas.forEach((tableData) => {
       const row = {
         id: tableData.id,

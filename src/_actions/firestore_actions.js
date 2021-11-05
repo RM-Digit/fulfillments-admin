@@ -47,7 +47,6 @@ export async function updateSignleField(id, key, val, pref) {
 }
 
 export async function updateFields(ids, data, type) {
-  console.log(data);
   ids.forEach(async (id) => {
     const docRef = doc(db, collection_name, id);
     await updateDoc(docRef, data);
@@ -69,7 +68,6 @@ export async function updateFields(ids, data, type) {
 }
 
 export async function bulkUpdateFields(datas, prefix) {
-  console.log("datas", datas);
 
   for (const id in datas) {
     const docRef = doc(db, collection_name, id);
@@ -77,7 +75,6 @@ export async function bulkUpdateFields(datas, prefix) {
     for (const key in datas[id]) {
       const val = datas[id][key];
       const pref = prefix[key];
-      console.log("pref", pref);
       if (pref) {
         const docSnap = await getDoc(docRef);
         const old = docSnap.data()[pref];

@@ -7,12 +7,16 @@ import {redirectUri,apiKey} from "../constants"
 
 const urlParams = new URLSearchParams(window.location.search);
 const shop_origin = urlParams.get("shop");
+const order_id = urlParams.get("id");
 const permissionUrl = `https://${shop_origin}/admin/oauth/authorize?client_id=${apiKey}&scope=read_products,read_content&redirect_uri=${redirectUri}`;
 const token = urlParams.get("access_token");
 const shopHost = shop_origin + "/admin";
 const host = Buffer.from(shopHost).toString("base64");
 
-localStorage.setItem("STOREID", urlParams.get("id"))
+if ( order_id !== null) {
+  localStorage.setItem("order_id", order_id);
+}
+
 const MyApp = ({ Component }) => {
   if (token) {
     return <Component />;

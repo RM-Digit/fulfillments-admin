@@ -23,7 +23,6 @@ const createStoreWithMiddleware = applyMiddleware(
   promiseMiddleware,
   thunk
 )(createStore);
-console.log("windows URL", window.location.href)
 const store = createStoreWithMiddleware(
   rootReducer,
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
@@ -33,8 +32,7 @@ ReactDOM.render(
     <BrowserRouter>
       <AppProvider i18n={translations}>
         <Router history={history}>
-          <Auth Component={App} />
-          {/* <App /> */}
+          {(!process.env.NODE_ENV || process.env.NODE_ENV === 'development') ? <App /> : <Auth Component={App} />}
         </Router>
       </AppProvider>
     </BrowserRouter>

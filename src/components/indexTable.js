@@ -3,8 +3,8 @@ import CsvDownloader from "react-csv-downloader";
 import { useDispatch, useSelector } from "react-redux";
 import { editable_columns } from "../constants";
 import { changeText, dateRangeChecker,getValFromObj } from "../utils/common";
-import { toggleToast } from "_actions/ui_actions";
-
+import { toggleToast,saveFilter } from "_actions/ui_actions";
+import { delivery_zone ,shipping_method} from "../constants";
 import {
   useIndexResourceState,
   Card,
@@ -12,15 +12,15 @@ import {
   Filters,
   IndexTable,
   Select,
-  TextField,
   TextStyle,
   DatePicker,
   Subheading,
   Pagination,
   FooterHelp,
+  TextField,
   Button,
   Modal,
-  
+  Autocomplete,
 } from "@shopify/polaris";
 import ReactHover, { Trigger, Hover } from "react-hover";
 import { updateFields, updateSignleField } from "../_actions/firestore_actions";
@@ -33,11 +33,11 @@ export default function Index({
   tableHeader,
   tableTitle,
   tableData,
-
   keys,
   prefix,
 }) {
   const fulfillments = useSelector((state) => state.data.tableData);
+  const filter = useSelector((state) => state.ui.filter);
   const dispatch = useDispatch();
   const [active, setActive] = useState(false);
   const [taggedWith, setTaggedWith] = useState("");
@@ -81,6 +81,7 @@ export default function Index({
   });
 
   const [perPage, setPerpage] = useState(15);
+  const in_app_id = localStorage.getItem('order_id');
 
   const handlePerpageChange = useCallback(
     (value) => setPerpage(parseInt(value)),
@@ -93,14 +94,17 @@ export default function Index({
     { label: "100 rows ", value: 100 },
   ];
   useEffect(() => {
+    setQueryValue(in_app_id);
     let delivery_zones = [{ label: "- Select One -", value: null }];
     var compare_zone = [];
     fulfillments.forEach((fulfillment, index) => {
    
       const zone = fulfillment.delivery_attributes.delivery_zone;
+      
+
       if (!compare_zone.includes(zone)) {
         compare_zone.push(zone);
-        delivery_zones.push({
+        zone && delivery_zones.push({
           label: zone,
           value: zone,
         });
@@ -121,7 +125,7 @@ export default function Index({
 
       if (!compare_method.includes(method)) {
         compare_method.push(method);
-        shipping_methods.push({
+        method && shipping_methods.push({
           label: method,
           value: method,
         });
@@ -133,6 +137,23 @@ export default function Index({
   }, [setShippingMethodOptions, fulfillments]);
 
   useEffect(() => {
+    if (filter && Object.keys(filter).length > 0) {
+      const filterKey = Object.keys(filter)[0];
+      const filterVal = filter[filterKey];
+      filterKey === 'queryValue' && setQueryValue(filterVal);
+      filterKey === 'status' && setStatus(filterVal);
+      filterKey === 'needsReview' && setNeedsReview(filterVal);
+      filterKey === 'deliveryZone' && setDeliveryZone(filterVal);
+      filterKey === 'shippingMethod' && setShippingMethod(filterVal);
+      filterKey === 'orderDate' && setOrderDate(filterVal);
+      filterKey === 'shipDate' && setShipDate(filterVal);
+      filterKey === 'deliveryDate' && setDeliveryDate(filterVal);
+      filterKey === 'sortValue' && setSortValue(filterVal);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
     var initial_data = tableData;
     if (queryValue) {
       initial_data = fulfillments.filter(
@@ -140,21 +161,21 @@ export default function Index({
           row.sales_order.order_id.toString().includes(queryValue) ||
           row.delivery_address.contact_email.includes(queryValue)
       );
-    
+      dispatch(saveFilter({queryValue}));
     }
 
     if (status.length > 0) {
       initial_data = fulfillments.filter((fulfillment) =>
         status.includes(fulfillment.fulfillment_status)
       );
+      dispatch(saveFilter({status}));
     }
 
     if (needsReview.length > 0) {
       initial_data = fulfillments.filter((fulfillment) =>
         needsReview.includes(fulfillment.fulfillment_needs_review)
       );
-
-     
+      dispatch(saveFilter({needsReview}));
     }
 
     if (deliveryZone && deliveryZone !== "- Select One -") {
@@ -162,6 +183,7 @@ export default function Index({
         (fulfillment) =>
           deliveryZone === fulfillment.delivery_attributes.delivery_zone
       );
+      dispatch(saveFilter({deliveryZone}));
     }
 
     if (shippingMethod && shippingMethod !== "- Select One -") {
@@ -169,31 +191,32 @@ export default function Index({
         (fulfillment) =>
           shippingMethod === fulfillment.delivery_attributes.shipping_method
       );
-
+      dispatch(saveFilter({shippingMethod}));
     }
 
     if (orderDate) {
       initial_data = fulfillments.filter((fulfillment) =>
         dateRangeChecker(orderDate, fulfillment.sales_order.created)
       );
-
+      dispatch(saveFilter({orderDate}));
     }
 
     if (shipDate) {
       initial_data = fulfillments.filter((fulfillment) =>
         dateRangeChecker(shipDate, fulfillment.ship_date)
       );
-
+      dispatch(saveFilter({shipDate}));
     }
 
     if (deliveryDate) {
       initial_data = fulfillments.filter((fulfillment) =>
         dateRangeChecker(deliveryDate, fulfillment.delivery_date)
       );
-
+      dispatch(saveFilter({deliveryDate}));
     }
 
     if (sortValue) {
+      dispatch(saveFilter({sortValue}));
       switch (sortValue) {
         case "today":
           const filter_month = new Date().getMonth();
@@ -248,7 +271,10 @@ export default function Index({
       (row, index) =>
         index >= (currentPage - 1) * perPage && index < currentPage * perPage
     );
-
+    
+    if (initial_data.length === tableData.length) {
+      dispatch(saveFilter({}));
+    }
     setTotal(initial_data.length);
     setTableRows(pageData);
     setCsvData(initial_data);
@@ -314,7 +340,6 @@ export default function Index({
   }, []);
 
   const handleSave = (id, key, pref) => {
-    console.log(id, key, pref);
     setLoading(true);
     dispatch(updateSignleField(id, key, value, pref))
       .then((res) => {
@@ -620,27 +645,50 @@ export default function Index({
                   <ReactHover options={optionsCursorTrueWithMargin}>
                     <Trigger type="trigger">
                       <span>{typeof getValFromObj(row, key) === 'object'?getValFromObj(row, key).toDate().toDateString():getValFromObj(row, key)}</span>
-                      
                     </Trigger>
                     <Hover type="hover">
                       <div className="hover-box" onClick={handleClick}>
-                        <TextField
-                          label={`Edit ${tableHeader[index].title}`}
-                          value={value}
-                          onChange={handleChange}
-                          autoComplete="off"
-                          connectedRight={
-                            <Button
-                              primary
-                              loading={loading}
-                              onClick={() =>
-                                handleSave(row["id"], key, prefix[key])
-                              }
-                            >
-                              Save
-                            </Button>
+                        {key === "delivery_zone" || key === "shipping_method" ?
+                          <Autocomplete
+                            options={key === "delivery_zone"?delivery_zone:shipping_method}
+                            selected={key === "delivery_zone"?delivery_zone:shipping_method}
+                            onSelect={(val)=>handleChange(val[0])}
+                            textField={ 
+                              <Autocomplete.TextField
+                                label={`Edit ${tableHeader[index].title}`}
+                                value={value}
+                                onChange={handleChange}
+                                autoComplete="off"
+                                connectedRight={
+                                  <Button
+                                    primary
+                                    loading={loading}
+                                    onClick={() =>
+                                      handleSave(row["id"], key, prefix[key])
+                                    }
+                                  >
+                                    Save
+                                  </Button>}
+                            />
+                            }
+                          /> : <TextField
+                                  label={`Edit ${tableHeader[index].title}`}
+                                  value={value}
+                                  onChange={handleChange}
+                                  autoComplete="off"
+                                  connectedRight={
+                                    <Button
+                                      primary
+                                      loading={loading}
+                                      onClick={() =>
+                                        handleSave(row["id"], key, prefix[key])
+                                      }
+                                    >
+                                      Save
+                                    </Button>
+                                  }
+                                />
                           }
-                        />
                       </div>
                     </Hover>
                   </ReactHover>

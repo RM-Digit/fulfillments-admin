@@ -7,10 +7,11 @@ import {
   Filters,
   FooterHelp,
   Pagination,
+  Autocomplete,
   TextField,
   ContextualSaveBar,
 } from "@shopify/polaris";
-import { editable_columns } from "../../constants";
+import { editable_columns, delivery_zone ,shipping_method} from "../../constants";
 import { useDispatch } from "react-redux";
 import { arrToArrObj } from "../../utils/common";
 import { bulkUpdateFields } from "../../_actions/firestore_actions";
@@ -39,9 +40,9 @@ export default function Index({
     setSelected(value);
   };
 
-  const handleContextualSaveBar = () => {
+  useEffect(() => {
     setSaveBarShow(Object.keys(value).length > 0);
-  };
+  }, [value])
 
   const handleFieldChange = (id, field, val) => {
     const temp = {
@@ -69,7 +70,7 @@ export default function Index({
 
   useEffect(() => {
     getShowBar(saveBarShow);
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saveBarShow]);
 
   useEffect(() => {
@@ -83,12 +84,32 @@ export default function Index({
     appliedFields.map((field) => {
       headers.push(field.key);
       setTableHeading(headers);
-      
+
     });
 
     const rows = pageData.map((row) => {
-      const fields = appliedFields.map((field) => (
-        <TextField
+      const fields = appliedFields.map((field) => {
+        const textField = (
+          <Autocomplete.TextField
+            value={
+              value[row[0]]
+                ? value[row[0]][field.key]
+                  ? value[row[0]][field.key]
+                  : editColumns[row[0]][field.key]
+                : editColumns[row[0]][field.key]
+            }
+            onChange={(val) => handleFieldChange(row[0], field.key, val)}
+          />
+        );
+
+        if (field.key === "delivery_zone" || field.key === "shipping_method") {
+          return <Autocomplete
+            options={field.key === "delivery_zone"?delivery_zone:shipping_method}
+            selected={field.key === "delivery_zone"?delivery_zone:shipping_method}
+            onSelect={(val) => handleFieldChange(row[0], field.key, val[0])}
+            textField={textField}
+          />
+        } else return <TextField
           value={
             value[row[0]]
               ? value[row[0]][field.key]
@@ -97,20 +118,20 @@ export default function Index({
               : editColumns[row[0]][field.key]
           }
           onChange={(val) => handleFieldChange(row[0], field.key, val)}
-          onBlur={handleContextualSaveBar}
         />
-      ));
+
+      });
       return [row[1]].concat(fields);
     });
 
     setTotal(initial_data.length);
     setTableRows(rows);
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableData, currentPage, appliedFields, value]);
 
   useEffect(() => {
     if (selected.length > 0) {
-      
+
       const fields = selected.map((val) => ({
         key: val,
         label: val,
@@ -118,7 +139,7 @@ export default function Index({
       }));
       setAppliedFields(fields);
     }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, selected.length > 0]);
 
   const handleRemoveFields = useCallback((value) => {
@@ -167,7 +188,7 @@ export default function Index({
               hideQueryField
               filters={filters}
               appliedFilters={appliedFields}
-              // onClearAll={handleFiltersClearAll}
+            // onClearAll={handleFiltersClearAll}
             />
           </Card.Section>
           <DataTable
@@ -177,11 +198,10 @@ export default function Index({
           />
           <FooterHelp>
             <Pagination
-              label={`${(currentPage - 1) * perPage}-${
-                total > currentPage * perPage - 1
+              label={`${(currentPage - 1) * perPage}-${total > currentPage * perPage - 1
                   ? currentPage * perPage - 1
                   : total
-              } of total ${total}`}
+                } of total ${total}`}
               hasPrevious={currentPage > 1}
               onPrevious={() => {
                 setCurrentPage((currentPage) => currentPage - 1);

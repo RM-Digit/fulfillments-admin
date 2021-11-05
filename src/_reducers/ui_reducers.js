@@ -1,10 +1,9 @@
-import { TOGGLE_TOAST, SWITCH_VIEW } from "../_actions/type";
+import { TOGGLE_TOAST, SWITCH_VIEW , SAVE_FILTER} from "../_actions/type";
 // eslint-disable-next-line import/no-anonymous-default-export
 export default function (
   state = { showToast: false, toastText: "", view: { mode: "main", ids: [] } },
   action
 ) {
-  console.log("action type", action.type);
   switch (action.type) {
     case TOGGLE_TOAST:
       return {
@@ -16,6 +15,11 @@ export default function (
       return {
         ...state,
         view: action.payload,
+      };
+    case SAVE_FILTER:
+      return {
+        ...state,
+        filter: action.payload,
       };
     default:
       return state;

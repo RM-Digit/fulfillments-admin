@@ -18,6 +18,10 @@ Runs the firebase emulator
 
 Runs the start-up.bash file to import DB
 
+## For Local Dev
+
+Go to `src/index.js` and find `<Auth component={App}/>`.
+Replace it with `<App />` 
 
 ## Deploy
 

@@ -19,9 +19,7 @@ function Index() {
     []
   );
   useEffect(() => {
-    console.log("fetch")
     dispatch(fetchAll());
-
   }, [dispatch]);
 
   const Components = [<Main />, <Delivery />, <SpecialNote />];

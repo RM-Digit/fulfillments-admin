@@ -4,6 +4,7 @@ export const UPDATE_BULK = "update_bulk";
 export const BULK_EDITOR = "bulk_editor";
 export const TOGGLE_TOAST = "toggle_toast";
 export const SWITCH_VIEW = "switch_view";
+export const SAVE_FILTER = "save_filter";
 export const REGISTER_USER = "register_user";
 export const UPDATE_USER = "update_user";
 export const LOGIN_USER = "login_user";

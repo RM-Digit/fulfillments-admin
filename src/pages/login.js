@@ -3,12 +3,12 @@ import { Heading } from "@shopify/polaris";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import GoogleButton from "react-google-button";
 
-export default function login() {
+export default function Login() {
   const handleClick = async () => {
     var provider = new GoogleAuthProvider();
     await signInWithPopup(getAuth(), provider);
   };
-
+  
   return (
     <div className="center">
       <Heading>You're not signed in. please sign in first</Heading>
