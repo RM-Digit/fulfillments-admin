@@ -4,7 +4,7 @@ import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB8aSH-kgheoCz71Rusg2hkGjVJ8jjbDWs",
+  apiKey: API_KEY,
   authDomain: "fulfillments-admin.firebaseapp.com",
   databaseURL: "https://fulfillments-admin-default-rtdb.firebaseio.com",
   projectId: "fulfillments-admin",
