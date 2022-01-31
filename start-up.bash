@@ -1,4 +1,4 @@
-#Stop following command execution if command before failed
+#Stop following command execution if command before failed.
 set -e
 
 #Remove previous bucket if exists
